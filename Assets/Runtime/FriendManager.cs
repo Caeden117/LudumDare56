@@ -10,6 +10,8 @@ public class FriendManager : MonoBehaviour
     private int initialFriendBurstCount = 0;
     [SerializeField]
     private float initialFriendBurstRate = 0;
+    [SerializeField]
+    private bool tiny = true;
 
     [SerializeField]
     private ComputeShader updateShader = null;
@@ -99,6 +101,7 @@ public class FriendManager : MonoBehaviour
         renderShader.SetInt("screenWidth", Screen.width);
         renderShader.SetInt("screenHeight", Screen.height);
         renderShader.SetInt("frameCount", 0);
+        renderShader.SetBool("tiny", tiny);
         renderShader.SetInt("friendCount", friendCount);
         renderShader.SetBuffer(renderFriendsKernel, "friendData", friendDataBuffer);
 
@@ -140,6 +143,7 @@ public class FriendManager : MonoBehaviour
         GL.Clear(true, true, Color.clear);
         RenderTexture.active = oldRT;
         renderShader.SetInt("frameCount", Time.frameCount);
+        renderShader.SetBool("tiny", tiny);
         renderShader.SetInt("friendCount", friendCount);
         renderDispatchSize = Mathf.CeilToInt((float) friendCount / renderThreadGroupSize);
         renderShader.Dispatch(renderFriendsKernel, renderDispatchSize, 1, 1);

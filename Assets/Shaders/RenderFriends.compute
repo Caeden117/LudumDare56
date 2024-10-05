@@ -9,6 +9,8 @@ int screenHeight;
 
 int frameCount;
 
+bool tiny;
+
 int friendCount;
 RWStructuredBuffer<Friend> friendData;
 
@@ -28,34 +30,31 @@ void RenderFriends(uint3 id: SV_DispatchThreadID)
     Friend this = friendData[id.x];
     
     int2 pos = int2((int) round(this.position.x), (int) round(this.position.y));
-
-    if (pos.x < 0 || pos.y < 0 || pos.x >= screenWidth || pos.y >= screenHeight)
-    {
-        return;
-    }
     
     // Draw black outline around friend, avoiding overwriting any friends that have been rendered already
-    for (int ox = -1; ox <= 1; ox++)
+    int range = tiny ? 1 : 2;
+    for (int ox = -range; ox <= range; ox++)
     {
-        for (int oy = -1; oy <= 1; oy++)
+        for (int oy = -range; oy <= range; oy++)
         {
-            if (ox == 0 && oy == 0)
+            int2 opos = pos + int2(ox, oy);
+            if (opos.x < 0 || opos.y < 0 || opos.x >= screenWidth || opos.y >= screenHeight)
             {
-                renderTexture[pos] = float4(this.color, 1.0);
+                continue;
+            }
+            
+            if (luminance(renderTexture[opos]) > 0.0)
+            {
+                continue;
+            }
+            
+            if (!tiny || ox == 0 && oy == 0)
+            {
+                renderTexture[opos] = float4(this.color, 1.0);
             }
             else
             {
-                if (pos.x + ox < 0 || pos.y + oy < 0 || pos.x + ox >= screenWidth || pos.y + oy >= screenHeight)
-                {
-                    continue;
-                }
-                
-                if (luminance(renderTexture[pos + int2(ox, oy)]) > 0.0)
-                {
-                    continue;
-                }
-                
-                renderTexture[pos + int2(ox, oy)] = float4(0.0, 0.0, 0.0, 1.0);
+                renderTexture[opos] = float4(0.0, 0.0, 0.0, 1.0);
             }
         }
     }
