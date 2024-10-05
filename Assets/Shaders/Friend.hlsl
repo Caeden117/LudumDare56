@@ -19,6 +19,7 @@ struct Friend {
 
 #define WINDOW_SEEKING_DIRECTION(this) (this.fvar0)
 #define WINDOW_SEEKING_JUMP_DISTANCE(this) (this.fvar1)
+#define WINDOW_SEEKING_CANCEL_TIMER(this) (this.fvar2)
 
 #define WINDOW_RIDING_POS_X(this) (this.fvar0)
 #define WINDOW_RIDING_POS_Y(this) (this.fvar1)

@@ -20,6 +20,8 @@ float windowVelocityY;
 int friendCount;
 RWStructuredBuffer<Friend> friendData;
 
+#define WINDOW_RIDING_SNAP_DISTANCE 20.0
+
 void SwitchStateWandering(inout Friend this, inout uint rngState)
 {
     this.state = FRIEND_STATE_WANDERING;
@@ -31,29 +33,43 @@ void SwitchStateWindowSeeking(inout Friend this, inout uint rngState)
     this.state = FRIEND_STATE_WINDOW_SEEKING;
     WINDOW_SEEKING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
     WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
+    WINDOW_SEEKING_CANCEL_TIMER(this) = 15.0 + RandomValue(rngState) * 15.0;
+
 }
 
 void SwitchStateWindowRiding(inout Friend this, inout uint rngState)
 {
     this.state = FRIEND_STATE_WINDOW_RIDING;
-    if (abs(this.position.x) - windowLeft <= 10.0)
+    if (abs(this.position.x - windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = 0.0;
         WINDOW_RIDING_POS_Y(this) = this.position.y - windowTop;
     }
-    else if (abs(this.position.x) - windowRight <= 10.0)
+    else if (abs(this.position.x - windowRight) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = windowRight - windowLeft;
         WINDOW_RIDING_POS_Y(this) = this.position.y - windowTop;
     }
-    else if (abs(this.position.y) - windowTop <= 10.0)
+    else if (abs(this.position.y - windowTop) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = this.position.x - windowLeft;
         WINDOW_RIDING_POS_Y(this) = 0.0;
     }
-    WINDOW_RIDING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
+    else
+    {
+        SwitchStateWindowSeeking(this, rngState);
+        return;
+    }
+    WINDOW_RIDING_DIRECTION(this) = sign(this.velocity.x);
+    if (abs(WINDOW_RIDING_DIRECTION(this)) < 0.1)
+    {
+        WINDOW_RIDING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
+    }
     WINDOW_RIDING_JUMP_TIMER(this) = 10.0 + 10.0 * RandomValue(rngState);
-
+    this.position.x = windowLeft + WINDOW_RIDING_POS_X(this);
+    this.position.y = windowTop + WINDOW_RIDING_POS_Y(this);
+    this.velocity.x = 0.0;
+    this.velocity.y = 0.0;
 }
 
 [numthreads(64, 1, 1)]
@@ -83,6 +99,10 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
     this.velocity.x = temporalLerp(this.velocity.x, 0.0, 0.01, deltaTime);
     this.velocity.y = temporalLerp(this.velocity.y, 0.0, 0.01, deltaTime);
     
+    // Apply velocity
+    this.position.x += this.velocity.x * deltaTime;
+    this.position.y += this.velocity.y * deltaTime;
+    
     // Action
     switch (this.state)
     {
@@ -105,13 +125,11 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
             }
         break;
         case FRIEND_STATE_WINDOW_SEEKING:
-            this.velocity.x = 300.0 * WINDOW_SEEKING_DIRECTION(this);
-            
             // Moving left
             if (WINDOW_SEEKING_DIRECTION(this) < 0.0)
             {
                 // Near left wall, reverse direction
-                if (this.position.x <= 100)
+                if (this.position.y >= screenHeight - 1.0 && this.position.x <= 0.0)
                 {
                     WINDOW_SEEKING_DIRECTION(this) = 1.0;
                 }
@@ -132,7 +150,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
             else if (WINDOW_SEEKING_DIRECTION(this) > 0.0)
             {
                 // Near right wall, reverse direction
-                if (this.position.x >= screenWidth - 100)
+                if (this.position.y >= screenHeight - 1.0 && this.position.x >= screenWidth - 1.0)
                 {
                     WINDOW_SEEKING_DIRECTION(this) = -1.0;
                 }
@@ -149,15 +167,23 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     }
                 }
             }
-        
+            
+            this.velocity.x = 300.0 * WINDOW_SEEKING_DIRECTION(this);
+            
+            WINDOW_SEEKING_CANCEL_TIMER(this) -= deltaTime;
+            if (WINDOW_SEEKING_CANCEL_TIMER(this) <= 0.0)
+            {
+                SwitchStateWandering(this, rngState);
+            }
+            
             if (activeWindow
               && this.position.x >= windowLeft
               && this.position.x <= windowRight
               && this.position.y >= windowTop
               && this.position.y <= windowBottom
-              && (abs(this.position.x) - windowLeft <= 10.0
-              || abs(this.position.x) - windowRight <= 10.0
-              || abs(this.position.y) - windowTop <= 10.0))
+              && (abs(this.position.x - windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE
+              || abs(this.position.x - windowRight) <= WINDOW_RIDING_SNAP_DISTANCE
+              || abs(this.position.y - windowTop) <= WINDOW_RIDING_SNAP_DISTANCE))
             {
                 SwitchStateWindowRiding(this, rngState);
             }
@@ -214,10 +240,6 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
             }
             break;
     }
-    
-    // Apply velocity
-    this.position.x += this.velocity.x * deltaTime;
-    this.position.y += this.velocity.y * deltaTime;
     
     // Left wall
     if (this.position.x < 0.0)
