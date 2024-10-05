@@ -1,0 +1,62 @@
+#pragma kernel RenderFriends
+
+#include "Friend.hlsl"
+
+RWTexture2D<float4> renderTexture;
+
+int screenWidth;
+int screenHeight;
+
+int frameCount;
+
+int friendCount;
+RWStructuredBuffer<Friend> friendData;
+
+float luminance(float4 color)
+{
+    return (color.r + color.g + color.b) * 0.333333 * color.a;
+}
+
+[numthreads(64, 1, 1)]
+void RenderFriends(uint3 id: SV_DispatchThreadID)
+{
+    if ((int) id.x >= friendCount)
+    {
+        return;
+    }
+    
+    Friend this = friendData[id.x];
+    
+    int2 pos = int2((int) round(this.position.x), (int) round(this.position.y));
+
+    if (pos.x < 0 || pos.y < 0 || pos.x >= screenWidth || pos.y >= screenHeight)
+    {
+        return;
+    }
+    
+    // Draw black outline around friend, avoiding overwriting any friends that have been rendered already
+    for (int ox = -1; ox <= 1; ox++)
+    {
+        for (int oy = -1; oy <= 1; oy++)
+        {
+            if (ox == 0 && oy == 0)
+            {
+                renderTexture[pos] = float4(this.color, 1.0);
+            }
+            else
+            {
+                if (pos.x + ox < 0 || pos.y + oy < 0 || pos.x + ox >= screenWidth || pos.y + oy >= screenHeight)
+                {
+                    continue;
+                }
+                
+                if (luminance(renderTexture[pos + int2(ox, oy)]) > 0.0)
+                {
+                    continue;
+                }
+                
+                renderTexture[pos + int2(ox, oy)] = float4(0.1, 0.1, 0.1, 1.0);
+            }
+        }
+    }
+}

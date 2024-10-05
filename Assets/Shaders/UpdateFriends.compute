@@ -1,0 +1,72 @@
+#pragma kernel UpdateFriends
+
+#include "Random.hlsl"
+#include "Util.hlsl"
+#include "Friend.hlsl"
+
+int screenWidth;
+int screenHeight;
+
+int frameCount;
+float deltaTime;
+
+int friendCount;
+RWStructuredBuffer<Friend> friendData;
+
+[numthreads(64, 1, 1)]
+void UpdateFriends(uint3 id: SV_DispatchThreadID)
+{
+    if ((int) id.x >= friendCount)
+    {
+        return;
+    }
+    
+    uint rngState = InitialState(id.x, frameCount);
+    
+    Friend this = friendData[id.x];
+    
+    // Thinking
+    this.decisionTimer -= deltaTime;
+    
+    // Gravity
+    this.velocity.y += 1000.0 * deltaTime;
+    
+    // Velocity damping - lose 1% speed every 1/60th of a second
+    this.velocity.x = temporalLerp(this.velocity.x, 0.0, 0.01, deltaTime);
+    this.velocity.y = temporalLerp(this.velocity.y, 0.0, 0.01, deltaTime);
+    
+    // Action
+    if (this.decisionTimer <= 0.0)
+    {
+        this.velocity.x += 600.0 * (RandomValue(rngState) * 2.0 - 1.0);
+        this.velocity.y += 600.0 * (RandomValue(rngState) * 2.0 - 1.0);
+        this.decisionTimer += 2.5 + 5.0 * RandomValue(rngState);
+    }
+    
+    // Apply velocity
+    this.position.x += this.velocity.x * deltaTime;
+    this.position.y += this.velocity.y * deltaTime;
+    
+    // Left wall
+    if (this.position.x < 0.0)
+    {
+        this.position.x = 0.0;
+        this.velocity.x = max(0.0, this.velocity.x);
+    }
+    
+    // Right wall
+    if (this.position.x >= screenWidth - 1)
+    {
+        this.position.x = screenWidth - 1;
+        this.velocity.x = min(0.0, this.velocity.x);
+    }
+    
+    // Floor
+    if (this.position.y >= screenHeight - 1)
+    {
+        this.position.y = screenHeight - 1;
+        this.velocity.y = min(0.0, this.velocity.y);
+    }
+    
+    friendData[id.x] = this;
+}
