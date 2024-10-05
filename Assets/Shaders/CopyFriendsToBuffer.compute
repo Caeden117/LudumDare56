@@ -1,0 +1,18 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CopyFriends
+
+#include "Friend.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<Friend> friendData;
+RWStructuredBuffer<Friend> randomFriendData;
+StructuredBuffer<uint> randomFriendIdx;
+
+[numthreads(64,1,1)]
+void CopyFriends (uint3 id : SV_DispatchThreadID)
+{
+    uint idx = id.x;
+    
+    randomFriendData[idx] = friendData[randomFriendIdx[idx]];
+}
