@@ -459,7 +459,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &944727439
 RectTransform:
   m_ObjectHideFlags: 0
@@ -492,7 +492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 0, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -794,8 +794,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f940287e4f99c2408e78085374b1d59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialFriendBurstCount: 4096
-  initialFriendBurstRate: 4096
+  initialFriendBurstCount: 3125000
+  initialFriendBurstRate: 100000
   updateShader: {fileID: 7200000, guid: 31eecf2e42c97d341aa9c8590bdd18f9, type: 3}
   renderShader: {fileID: 7200000, guid: db9cf2586f740bc48bbb2e9479af3289, type: 3}
   output: {fileID: 1410531476}

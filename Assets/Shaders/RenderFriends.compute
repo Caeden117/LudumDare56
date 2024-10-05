@@ -55,7 +55,7 @@ void RenderFriends(uint3 id: SV_DispatchThreadID)
                     continue;
                 }
                 
-                renderTexture[pos + int2(ox, oy)] = float4(0.1, 0.1, 0.1, 1.0);
+                renderTexture[pos + int2(ox, oy)] = float4(0.0, 0.0, 0.0, 1.0);
             }
         }
     }
