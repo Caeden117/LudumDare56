@@ -40,7 +40,7 @@ public class TransparancyManager : MonoBehaviour
 
         // Make window layered but not input-transparent
         SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-        SetInteractable(true);
+        SetInteractable(false);
 
         // Adjust color key and alpha for selective transparency
         SetLayeredWindowAttributes(hWnd, 0xFF00FF, 255, LWA_COLORKEY); // You might not need LWA_COLORKEY

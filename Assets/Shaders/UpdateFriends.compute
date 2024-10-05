@@ -10,8 +10,51 @@ int screenHeight;
 int frameCount;
 float deltaTime;
 
+float windowLeft;
+float windowTop;
+float windowRight;
+float windowBottom;
+float windowVelocityX;
+float windowVelocityY;
+
 int friendCount;
 RWStructuredBuffer<Friend> friendData;
+
+void SwitchStateWandering(inout Friend this, inout uint rngState)
+{
+    this.state = FRIEND_STATE_WANDERING;
+    WANDERING_JUMP_TIMER(this) = 2.5 + RandomValue(rngState) * 5.0;
+}
+
+void SwitchStateWindowSeeking(inout Friend this, inout uint rngState)
+{
+    this.state = FRIEND_STATE_WINDOW_SEEKING;
+    WINDOW_SEEKING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
+    WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
+}
+
+void SwitchStateWindowRiding(inout Friend this, inout uint rngState)
+{
+    this.state = FRIEND_STATE_WINDOW_RIDING;
+    if (abs(this.position.x) - windowLeft <= 10.0)
+    {
+        WINDOW_RIDING_POS_X(this) = 0.0;
+        WINDOW_RIDING_POS_Y(this) = this.position.y - windowTop;
+    }
+    else if (abs(this.position.x) - windowRight <= 10.0)
+    {
+        WINDOW_RIDING_POS_X(this) = windowRight - windowLeft;
+        WINDOW_RIDING_POS_Y(this) = this.position.y - windowTop;
+    }
+    else if (abs(this.position.y) - windowTop <= 10.0)
+    {
+        WINDOW_RIDING_POS_X(this) = this.position.x - windowLeft;
+        WINDOW_RIDING_POS_Y(this) = 0.0;
+    }
+    WINDOW_RIDING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
+    WINDOW_RIDING_JUMP_TIMER(this) = 10.0 + 10.0 * RandomValue(rngState);
+
+}
 
 [numthreads(64, 1, 1)]
 void UpdateFriends(uint3 id: SV_DispatchThreadID)
@@ -21,12 +64,17 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
         return;
     }
     
+    float2 windowSize = float2(windowRight - windowLeft, windowBottom - windowTop);
+    bool activeWindow = windowSize.x > 0.0
+      && windowSize.y > 0.0
+      && windowLeft > -32
+      && windowTop > -32
+      && windowRight < screenWidth + 32
+      && windowBottom < screenHeight + 32;
+    
     uint rngState = InitialState(id.x, frameCount);
     
     Friend this = friendData[id.x];
-    
-    // Thinking
-    this.decisionTimer -= deltaTime;
     
     // Gravity
     this.velocity.y += 1000.0 * deltaTime;
@@ -36,11 +84,135 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
     this.velocity.y = temporalLerp(this.velocity.y, 0.0, 0.01, deltaTime);
     
     // Action
-    if (this.decisionTimer <= 0.0)
+    switch (this.state)
     {
-        this.velocity.x += 600.0 * (RandomValue(rngState) * 2.0 - 1.0);
-        this.velocity.y += 600.0 * (RandomValue(rngState) * 2.0 - 1.0);
-        this.decisionTimer += 2.5 + 5.0 * RandomValue(rngState);
+        case FRIEND_STATE_UNSET:
+            SwitchStateWandering(this, rngState);
+            break;
+        case FRIEND_STATE_WANDERING:
+            WANDERING_JUMP_TIMER(this) -= deltaTime;
+            if (this.position.y >= screenHeight - 1.0
+              && WANDERING_JUMP_TIMER(this) <= 0.0f)
+            {
+                this.velocity.x += 300.0 * (RandomValue(rngState) * 2.0 - 1.0);
+                this.velocity.y += -600.0 * RandomValue(rngState);
+                WANDERING_JUMP_TIMER(this) += 2.5 + 5.0 * RandomValue(rngState);
+                
+                if (RandomValue(rngState) < 0.1)
+                {
+                    SwitchStateWindowSeeking(this, rngState);
+                }
+            }
+        break;
+        case FRIEND_STATE_WINDOW_SEEKING:
+            this.velocity.x = 300.0 * WINDOW_SEEKING_DIRECTION(this);
+            
+            // Moving left
+            if (WINDOW_SEEKING_DIRECTION(this) < 0.0)
+            {
+                // Near left wall, reverse direction
+                if (this.position.x <= 100)
+                {
+                    WINDOW_SEEKING_DIRECTION(this) = 1.0;
+                }
+                // Stupidly attempt to jump if near on X axis
+                else
+                {
+                    if (activeWindow
+                      && this.position.y >= screenHeight - 1.0
+                      && windowRight > this.position.x - WINDOW_SEEKING_JUMP_DISTANCE(this)
+                      && windowRight < this.position.x - WINDOW_SEEKING_JUMP_DISTANCE(this) * 0.25)
+                    {
+                        this.velocity.y = -1200.0 + -600.0 * RandomValue(rngState);
+                        WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
+                    }
+                }
+            }
+            // Moving right
+            else if (WINDOW_SEEKING_DIRECTION(this) > 0.0)
+            {
+                // Near right wall, reverse direction
+                if (this.position.x >= screenWidth - 100)
+                {
+                    WINDOW_SEEKING_DIRECTION(this) = -1.0;
+                }
+                // Stupidly attempt to jump if near on X axis
+                else
+                {
+                    if (activeWindow
+                      && this.position.y >= screenHeight - 1.0
+                      && windowLeft < this.position.x + WINDOW_SEEKING_JUMP_DISTANCE(this)
+                      && windowLeft > this.position.x + WINDOW_SEEKING_JUMP_DISTANCE(this) * 0.25)
+                    {
+                        this.velocity.y = -1200.0 + -600.0 * RandomValue(rngState);
+                        WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
+                    }
+                }
+            }
+        
+            if (activeWindow
+              && this.position.x >= windowLeft
+              && this.position.x <= windowRight
+              && this.position.y >= windowTop
+              && this.position.y <= windowBottom
+              && (abs(this.position.x) - windowLeft <= 10.0
+              || abs(this.position.x) - windowRight <= 10.0
+              || abs(this.position.y) - windowTop <= 10.0))
+            {
+                SwitchStateWindowRiding(this, rngState);
+            }
+            break;
+        case FRIEND_STATE_WINDOW_RIDING:
+            this.velocity.x = 0.0;
+            this.velocity.y = 0.0;
+            if (!activeWindow
+              || abs(windowVelocityX) > 1000.0
+              || abs(windowVelocityY) > 1000.0)
+            {
+                SwitchStateWandering(this, rngState);
+                this.velocity.x = ((RandomValue(rngState) < 0.75 && activeWindow) ? sign(windowVelocityX) : (RandomValue(rngState) > 0.5 ? 1.0 : -1.0)) * (150.0 + RandomValue(rngState) * 150.0);
+                this.velocity.y = -150.0 + RandomValue(rngState) * -150.0;
+            }
+            else if (WINDOW_RIDING_POS_X(this) > windowSize.x
+              || WINDOW_RIDING_POS_Y(this) > windowSize.y)
+            {
+                SwitchStateWandering(this, rngState);
+            }
+            else
+            {
+                // Climb side!
+                if (WINDOW_RIDING_POS_Y(this) > 0.0)
+                {
+                    WINDOW_RIDING_POS_Y(this) = max(0.0, WINDOW_RIDING_POS_Y(this) - 300.0 * deltaTime);
+                }
+                // Run around on top!
+                else
+                {
+                    WINDOW_RIDING_POS_X(this) += WINDOW_RIDING_DIRECTION(this) * 300.0 * deltaTime;
+                    if (WINDOW_RIDING_POS_X(this) > windowSize.x)
+                    {
+                        WINDOW_RIDING_POS_X(this) = windowSize.x;
+                        WINDOW_RIDING_DIRECTION(this) = -1.0;
+                    }
+                    else if (WINDOW_RIDING_POS_X(this) < 0.0)
+                    {
+                        WINDOW_RIDING_POS_X(this) = 0.0;
+                        WINDOW_RIDING_DIRECTION(this) = 1.0;
+                    }
+                }
+                
+                this.position.x = windowLeft + WINDOW_RIDING_POS_X(this);
+                this.position.y = windowTop + WINDOW_RIDING_POS_Y(this);
+                
+                WINDOW_RIDING_JUMP_TIMER(this) -= deltaTime;
+                if (WINDOW_RIDING_JUMP_TIMER(this) <= 0.0)
+                {
+                    this.velocity.x = WINDOW_RIDING_DIRECTION(this) * 300.0;
+                    this.velocity.y = -600.0;
+                    SwitchStateWandering(this, rngState);
+                }
+            }
+            break;
     }
     
     // Apply velocity
