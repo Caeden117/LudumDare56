@@ -3,8 +3,6 @@
 
 #include "Friend.hlsl"
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
 RWStructuredBuffer<Friend> friendData;
 RWStructuredBuffer<Friend> randomFriendData;
 StructuredBuffer<uint> randomFriendIdx;

@@ -812,6 +812,57 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1410531474}
   m_CullTransparentMesh: 1
+--- !u!1 &1469396424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1469396426}
+  - component: {fileID: 1469396425}
+  m_Layer: 0
+  m_Name: Popup Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1469396425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1469396424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e86a2f8cc32feda438105fc93062a6ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  friendManager: {fileID: 1560855993}
+  delayRange: {x: 25, y: 45}
+  popupNumberRange: {x: 15, y: 30}
+  popupSpawnRange: {x: 0, y: 25}
+  popupLifetimeRange: {x: 10, y: 15}
+  popupPrefab: {fileID: -7294578602140444315, guid: 150ebac5adbe7a74a9efc61e3b7230e7, type: 3}
+  popupParent: {fileID: 677696291}
+--- !u!4 &1469396426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1469396424}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1560855992
 GameObject:
   m_ObjectHideFlags: 0
@@ -920,3 +971,4 @@ SceneRoots:
   - {fileID: 677696291}
   - {fileID: 955140589}
   - {fileID: 638967637}
+  - {fileID: 1469396426}
