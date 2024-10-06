@@ -11,6 +11,8 @@ int frameCount;
 
 bool tiny;
 
+bool debugDrawMood;
+
 int friendCount;
 RWStructuredBuffer<Friend> friendData;
 StructuredBuffer<float3> colorPalette;
@@ -18,6 +20,39 @@ StructuredBuffer<float3> colorPalette;
 float luminance(float4 color)
 {
     return (color.r + color.g + color.b) * 0.333333 * color.a;
+}
+
+float3 hueToColor(float hue)
+{
+    hue = 6.0 * fmod(hue, 1.0);
+    
+    float f = frac(hue);
+    if (hue < 1.0)
+    {
+        return float3(1.0, f, 0.0);
+    }
+    else if (hue < 2.0)
+    {
+        return float3(1.0 - f, 1.0, 0.0);
+    }
+    else if (hue < 3.0)
+    {
+        return float3(0.0, 1.0, f);
+    }
+    else if (hue < 4.0)
+    {
+        return float3(0.0, 1.0 - f, 1.0);
+    }
+    else if (hue < 5.0)
+    {
+        return float3(f, 0.0, 1.0);
+    }
+    else if (hue < 6.0)
+    {
+        return float3(1.0, 0.0, 1.0 - f);
+    }
+    
+    return float3(0.0, 0.0, 0.0);
 }
 
 [numthreads(64, 1, 1)]
@@ -31,6 +66,13 @@ void RenderFriends(uint3 id: SV_DispatchThreadID)
     Friend this = friendData[id.x];
     
     int2 pos = int2((int) round(this.position.x), (int) round(this.position.y));
+    
+    float3 color = colorPalette[FRIEND_GET_COLOR_IDX(this)];
+    
+    if (debugDrawMood)
+    {
+        color = hueToColor(FRIEND_GET_MOOD(this) / 255.0 * 0.333333);
+    }
     
     // Draw black outline around friend, avoiding overwriting any friends that have been rendered already
     int range = tiny ? 1 : 2;
@@ -51,7 +93,7 @@ void RenderFriends(uint3 id: SV_DispatchThreadID)
             
             if (!tiny || ox == 0 && oy == 0)
             {
-                renderTexture[opos] = float4(colorPalette[FRIEND_GET_COLOR_IDX(this)], 1.0);
+                renderTexture[opos] = float4(color, 1.0);
             }
             else
             {

@@ -9,6 +9,10 @@ int screenHeight;
 
 int frameCount;
 float deltaTime;
+int mouseX;
+int mouseY;
+
+bool updateMood;
 
 float windowLeft;
 float windowTop;
@@ -239,6 +243,40 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                 }
             }
             break;
+    }
+    
+    // Counts changes to mood once per second
+    // This bool is activated for one frame every second using a timer in FriendManager
+    if (updateMood)
+    {
+        float mood = FRIEND_GET_MOOD(this) / 255.0;
+        
+        float moodChange = 0.0;
+        
+        switch (FRIEND_GET_STATE(this))
+        {
+            case FRIEND_STATE_WANDERING:
+                moodChange = -0.01;
+                break;
+            case FRIEND_STATE_WINDOW_SEEKING:
+                moodChange = -0.02;
+                break;
+            case FRIEND_STATE_WINDOW_RIDING:
+                moodChange = 0.07;
+                break;
+            case FRIEND_STATE_HUNGRY:
+                moodChange = -0.04;
+                break;
+        }
+        
+        if (abs(this.position.x - mouseX) <= 50.0 && abs(this.position.y - mouseY) <= 50.0)
+        {
+            moodChange += 0.06;
+        }
+        
+        mood = clamp(mood + RandomValue(rngState) * moodChange, 0.0, 1.0);
+        
+        FRIEND_SET_MOOD(this, (uint) floor(mood * 255.0));
     }
     
     // Left wall
