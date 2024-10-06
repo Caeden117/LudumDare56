@@ -144,6 +144,6 @@ public class Popup : MonoBehaviour
         var friendPosition = friendManager.RandomFriends[randomFriendIdx].position;
         friendPosition.y = Screen.height - friendPosition.y;
 
-        rectTransform.anchoredPosition = friendPosition + idleOffset + bounceOffset;
+        rectTransform.anchoredPosition = friendPosition + idleOffset + bounceOffset + new Vector2(0.5f, 0.5f);
     }
 }

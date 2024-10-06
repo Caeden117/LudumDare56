@@ -86,6 +86,7 @@ MonoBehaviour:
   - {fileID: 1265750863, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: 966873662, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: 1593652891, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 1752759351, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   happyColor: {r: 0.3981294, g: 0.78699994, b: 0.7499646, a: 0.8}
   slightlyHappySprites:
   - {fileID: -740307172, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
@@ -106,6 +107,7 @@ MonoBehaviour:
   - {fileID: 1644238223, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: 726851162, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -1390730002, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: -510046716, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   slightlyUnhappyColor: {r: 0.8113208, g: 0.7921814, b: 0.3099858, a: 0.8}
   unhappySprites:
   - {fileID: 293913417, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
@@ -379,7 +381,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5285785097126754818, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  m_Sprite: {fileID: 1752759351, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
