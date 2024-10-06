@@ -16,12 +16,23 @@ public class WindowManager : MonoBehaviour {
 
     private delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
 
+    private IntPtr gameHWnd;
+
     private void Start() {
+        gameHWnd = GetActiveWindow();
     }
 
     private void Update() {
         lastForegroundMin = ForegroundMin;
         IntPtr hWnd = GetForegroundWindow();
+        if (hWnd == gameHWnd)
+        {
+            ForegroundMin = Vector2.zero;
+            ForegroundMax = Vector2.zero;
+            ForegroundVelocity = Vector2.zero;
+            lastForegroundMin = Vector2.zero;
+            return;
+        }
         RECT rect = default;
         GetWindowRect(hWnd, ref rect);
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect#remarks
@@ -102,6 +113,9 @@ public class WindowManager : MonoBehaviour {
         list.Add(handle);
         return true;
     }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetActiveWindow();
 
     [DllImport("user32.dll", SetLastError = false)]
     private static extern IntPtr GetDesktopWindow();

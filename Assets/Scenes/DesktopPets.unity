@@ -500,9 +500,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25f02207419de454fafed8aca1dc54d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  foregroundMin: {x: 0, y: 0}
-  foregroundMax: {x: 0, y: 0}
-  foregroundVelocity: {x: 0, y: 0}
 --- !u!4 &638967637
 Transform:
   m_ObjectHideFlags: 0
