@@ -37,7 +37,7 @@ public class PopupManager : MonoBehaviour
 
         friendManager.SelectNewRandomFriends();
 
-        var numPopups = Random.Range(popupNumberRange.x, popupNumberRange.y);
+        var numPopups = Mathf.Min(Random.Range(popupNumberRange.x, popupNumberRange.y), friendManager.FriendCount);
         
         // Construct multiple popup tasks
         var tasks = new UniTask[numPopups];
