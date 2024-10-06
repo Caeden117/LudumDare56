@@ -1,4 +1,6 @@
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -27,22 +29,52 @@ public class FriendManager : MonoBehaviour
     [SerializeField]
     private WindowManager windowManager = null;
 
+    [SerializeField]
+    private List<string> customColorPalette = new List<string>();
+
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct Friend {
         public Vector2 position;
         public Vector2 velocity;
-        public Vector3 color;
-        public uint state;
+        public uint packed0;
         public float fvar0;
         public float fvar1;
         public float fvar2;
         public float fvar3;
+
+        public byte state {
+            get {
+                return (byte) (packed0 & 0xFu);
+            }
+            set {
+                packed0 = (packed0 & ~0xFu) | (value & 0xFu);
+            }
+        }
+
+        public byte mood {
+            get {
+                return (byte) ((packed0 >> 4) & 0xFFu);
+            }
+            set {
+                packed0 = (packed0 & ~(0xFFu << 4)) | ((value & 0xFFu) << 4);
+            }
+        }
+
+        public byte colorIdx {
+            get {
+                return (byte) ((packed0 >> 12) & 0xFFu);
+            }
+            set {
+                packed0 = (packed0 & ~(0xFFu << 12)) | ((value & 0xFFu) << 12);
+            }
+        }
     };
 
     private bool initialized = false;
     private RenderTexture renderTexture;
     private int friendCount = 0;
     private ComputeBuffer friendDataBuffer;
+    private ComputeBuffer colorPaletteBuffer;
     private ComputeBuffer copyFriendIdxBuffer;
     private ComputeBuffer copyFriendBuffer;
     private int updateFriendsKernel;
@@ -54,9 +86,11 @@ public class FriendManager : MonoBehaviour
     private int updateDispatchSize;
     private int renderDispatchSize;
 
-    private const int FRIEND_STRIDE = sizeof(float) * 11 + sizeof(int);
+    private const int FRIEND_STRIDE = sizeof(float) * 8 + sizeof(int);
     private const int FRIEND_MAX = 100000000 / FRIEND_STRIDE;
     private const int RANDOM_FRIEND_COUNT = 64;
+    private const int COLOR_PALETTE_STRIDE = sizeof(float) * 3;
+    private const int COLOR_PALETTE_MAX = 1 << 8;
 
     private readonly int[] randomFriendIdx = new int[RANDOM_FRIEND_COUNT];
 
@@ -80,17 +114,37 @@ public class FriendManager : MonoBehaviour
             friends[i] = new Friend() {
                 position = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f),
                 velocity = new Vector2(velocity * Mathf.Cos(angle), velocity * Mathf.Sin(angle)),
-                color = new Vector3(UnityEngine.Random.Range(0.6f, 1.0f), UnityEngine.Random.Range(0.6f, 1.0f), UnityEngine.Random.Range(0.6f, 1.0f)),
-                state = 0,
+                packed0 = 0,
                 fvar0 = 0.0f,
                 fvar1 = 0.0f,
                 fvar2 = 0.0f,
-                fvar3 = 0.0f
+                fvar3 = 0.0f,
+
+                state = 0,
+                mood = 128,
+                colorIdx = (byte) Random.Range(0, COLOR_PALETTE_MAX)
             };
         }
 
         friendDataBuffer = new ComputeBuffer(FRIEND_MAX, FRIEND_STRIDE);
         friendDataBuffer.SetData(friends);
+
+        Vector3[] colorPalette = new Vector3[COLOR_PALETTE_MAX];
+        for (int i = 0; i < COLOR_PALETTE_MAX; i++) {
+            if (i < customColorPalette.Count) {
+                Color color;
+                if (ColorUtility.TryParseHtmlString(customColorPalette[i], out color)) {
+                    colorPalette[i] = new Vector3(color.r, color.g, color.b);
+                } else {
+                    Debug.LogError("Failed to parse custom color palette color #" + i + ": " + customColorPalette[i]);
+                }
+            } else {
+                colorPalette[i] = new Vector3(Random.Range(0.6f, 1.0f), Random.Range(0.6f, 1.0f), Random.Range(0.6f, 1.0f));
+            }
+        }
+
+        colorPaletteBuffer = new ComputeBuffer(COLOR_PALETTE_MAX, COLOR_PALETTE_STRIDE);
+        colorPaletteBuffer.SetData(colorPalette);
 
         copyFriendIdxBuffer = new ComputeBuffer(RANDOM_FRIEND_COUNT, sizeof(int));
         copyFriendBuffer = new ComputeBuffer(RANDOM_FRIEND_COUNT, FRIEND_STRIDE);
@@ -119,6 +173,7 @@ public class FriendManager : MonoBehaviour
         renderShader.SetBool("tiny", tiny);
         renderShader.SetInt("friendCount", friendCount);
         renderShader.SetBuffer(renderFriendsKernel, "friendData", friendDataBuffer);
+        renderShader.SetBuffer(renderFriendsKernel, "colorPalette", colorPaletteBuffer);
 
         copyShader.SetBuffer(copyFriendsKernel, "friendData", friendDataBuffer);
         copyShader.SetBuffer(copyFriendsKernel, "randomFriendData", copyFriendBuffer);

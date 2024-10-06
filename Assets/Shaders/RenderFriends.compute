@@ -13,6 +13,7 @@ bool tiny;
 
 int friendCount;
 RWStructuredBuffer<Friend> friendData;
+StructuredBuffer<float3> colorPalette;
 
 float luminance(float4 color)
 {
@@ -50,7 +51,7 @@ void RenderFriends(uint3 id: SV_DispatchThreadID)
             
             if (!tiny || ox == 0 && oy == 0)
             {
-                renderTexture[opos] = float4(this.color, 1.0);
+                renderTexture[opos] = float4(colorPalette[FRIEND_GET_COLOR_IDX(this)], 1.0);
             }
             else
             {

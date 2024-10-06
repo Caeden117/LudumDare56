@@ -24,13 +24,13 @@ RWStructuredBuffer<Friend> friendData;
 
 void SwitchStateWandering(inout Friend this, inout uint rngState)
 {
-    this.state = FRIEND_STATE_WANDERING;
+    FRIEND_SET_STATE(this, FRIEND_STATE_WANDERING);
     WANDERING_JUMP_TIMER(this) = 2.5 + RandomValue(rngState) * 5.0;
 }
 
 void SwitchStateWindowSeeking(inout Friend this, inout uint rngState)
 {
-    this.state = FRIEND_STATE_WINDOW_SEEKING;
+    FRIEND_SET_STATE(this, FRIEND_STATE_WINDOW_SEEKING);
     WINDOW_SEEKING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
     WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
     WINDOW_SEEKING_CANCEL_TIMER(this) = 15.0 + RandomValue(rngState) * 15.0;
@@ -39,7 +39,7 @@ void SwitchStateWindowSeeking(inout Friend this, inout uint rngState)
 
 void SwitchStateWindowRiding(inout Friend this, inout uint rngState)
 {
-    this.state = FRIEND_STATE_WINDOW_RIDING;
+    FRIEND_SET_STATE(this, FRIEND_STATE_WINDOW_RIDING);
     if (abs(this.position.x - windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = 0.0;
@@ -104,7 +104,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
     this.position.y += this.velocity.y * deltaTime;
     
     // Action
-    switch (this.state)
+    switch (FRIEND_GET_STATE(this))
     {
         case FRIEND_STATE_UNSET:
             SwitchStateWandering(this, rngState);
