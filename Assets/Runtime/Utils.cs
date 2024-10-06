@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Utils
@@ -27,6 +28,12 @@ public class Utils
     public static float TemporalLerp(float a, float b, float t)
     {
         return Mathf.Lerp(a, b, 1.0f - Mathf.Pow(1.0f - t, Time.deltaTime * 60));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static decimal TemporalLerp(decimal a, decimal b, double t) {
+        decimal mix = (decimal) (1.0 - Math.Pow(1.0 - t, Time.deltaTime * 60.0));
+        return a * (1.0m - mix) + b * mix;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

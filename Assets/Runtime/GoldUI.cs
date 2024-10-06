@@ -8,7 +8,10 @@ public class GoldUI : MonoBehaviour
     [SerializeField]
     private TMP_Text goldLabel;
 
+    private decimal smoothedGold = 0m;
+
     private void Update() {
-        goldLabel.text = goldManager.FormatGold(goldManager.Gold);
+        smoothedGold = Utils.TemporalLerp(smoothedGold, goldManager.Gold, 0.1);
+        goldLabel.text = goldManager.FormatGold(smoothedGold);
     }
 }
