@@ -8,9 +8,10 @@ using UnityEngine.XR;
 using System.Security.Cryptography;
 
 public class WindowManager : MonoBehaviour {
-    public Vector2 foregroundMin;
-    public Vector2 foregroundMax;
-    public Vector2 foregroundVelocity;
+    public Vector2 ForegroundMin { get; private set; }
+    public Vector2 ForegroundMax { get; private set; }
+    public Vector2 ForegroundVelocity { get; private set; }
+
     private Vector2 lastForegroundMin;
 
     private delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
@@ -19,7 +20,7 @@ public class WindowManager : MonoBehaviour {
     }
 
     private void Update() {
-        lastForegroundMin = foregroundMin;
+        lastForegroundMin = ForegroundMin;
         IntPtr hWnd = GetForegroundWindow();
         RECT rect = default;
         GetWindowRect(hWnd, ref rect);
@@ -40,11 +41,9 @@ public class WindowManager : MonoBehaviour {
                 rectHandle.Free();
             }
         }*/
-        foregroundMin.x = rect.left;
-        foregroundMin.y = rect.top;
-        foregroundMax.x = rect.right;
-        foregroundMax.y = rect.bottom;
-        foregroundVelocity = (foregroundMin - lastForegroundMin) / Time.deltaTime;
+        ForegroundMin = new Vector2(rect.left, rect.top);
+        ForegroundMax = new Vector2(rect.right, rect.bottom);
+        ForegroundVelocity = (ForegroundMin - lastForegroundMin) / Time.deltaTime;
     }
 
     // fuck this dude there's no reliable way to tell whether a window is visible i swear to god

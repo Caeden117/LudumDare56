@@ -898,6 +898,7 @@ MonoBehaviour:
   updateShader: {fileID: 7200000, guid: 31eecf2e42c97d341aa9c8590bdd18f9, type: 3}
   renderShader: {fileID: 7200000, guid: db9cf2586f740bc48bbb2e9479af3289, type: 3}
   copyShader: {fileID: 7200000, guid: ef07bfb979ff7e14793dbc11e7f52f41, type: 3}
+  aggregateShader: {fileID: 7200000, guid: 253029d85500f9e458e0e969e78ab74f, type: 3}
   output: {fileID: 1410531476}
   windowManager: {fileID: 638967636}
   customColorPalette:

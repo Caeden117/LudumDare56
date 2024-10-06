@@ -20,6 +20,8 @@ public class FriendManager : MonoBehaviour
     private ComputeShader renderShader = null;
     [SerializeField]
     private ComputeShader copyShader = null;
+    [SerializeField]
+    private ComputeShader aggregateShader = null;
 
     [SerializeField]
     private RawImage output = null;
@@ -78,22 +80,30 @@ public class FriendManager : MonoBehaviour
     private ComputeBuffer colorPaletteBuffer;
     private ComputeBuffer copyFriendIdxBuffer;
     private ComputeBuffer copyFriendBuffer;
+    private ComputeBuffer moodStatsBuffer;
     private int updateFriendsKernel;
     private int renderFriendsKernel;
     private int copyFriendsKernel;
+    private int aggregateFriendsKernel;
     private uint updateThreadGroupSize;
     private uint renderThreadGroupSize;
     private uint copyThreadGroupSize;
+    private uint aggregateThreadGroupSize;
     private int updateDispatchSize;
     private int renderDispatchSize;
     private int copyDispatchSize;
+    private int aggregateDispatchSize;
 
     private const int FRIEND_STRIDE = 8 * sizeof(float) + 1 * sizeof(int);
-    private const int FRIEND_MAX = 2000000000 / FRIEND_STRIDE;
+    private const int FRIEND_MAX = 10000000; // * FRIEND_STRIDE = 360MB VRAM
     private const int FRIENDS_PER_INVOCATION = 64;
     private const int RANDOM_FRIEND_MAX = 64;
     private const int COLOR_PALETTE_STRIDE = sizeof(float) * 3;
     private const int COLOR_PALETTE_MAX = 1 << 8;
+    private const int MOOD_STATS_MAX = 10;
+
+    public int[] MoodStats { get; private set; } = new int[MOOD_STATS_MAX];
+    private int[] moodStatsDefault = new int[MOOD_STATS_MAX];
 
     private readonly int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
     private float updateMoodTimer = 0.0f;
@@ -153,9 +163,13 @@ public class FriendManager : MonoBehaviour
         copyFriendIdxBuffer = new ComputeBuffer(RANDOM_FRIEND_MAX, sizeof(int));
         copyFriendBuffer = new ComputeBuffer(RANDOM_FRIEND_MAX, FRIEND_STRIDE);
 
+        moodStatsBuffer = new ComputeBuffer(MOOD_STATS_MAX, sizeof(float));
+        moodStatsBuffer.SetData(moodStatsDefault);
+
         updateFriendsKernel = updateShader.FindKernel("UpdateFriends");
         renderFriendsKernel = renderShader.FindKernel("RenderFriends");
         copyFriendsKernel = copyShader.FindKernel("CopyFriends");
+        aggregateFriendsKernel = aggregateShader.FindKernel("AggregateFriends");
 
         updateShader.SetInt("screenWidth", Screen.width);
         updateShader.SetInt("screenHeight", Screen.height);
@@ -186,9 +200,14 @@ public class FriendManager : MonoBehaviour
         copyShader.SetBuffer(copyFriendsKernel, "randomFriendData", copyFriendBuffer);
         copyShader.SetBuffer(copyFriendsKernel, "randomFriendIdx", copyFriendIdxBuffer);
 
+        aggregateShader.SetInt("friendCount", friendCount);
+        aggregateShader.SetBuffer(aggregateFriendsKernel, "friendData", friendDataBuffer);
+        aggregateShader.SetBuffer(aggregateFriendsKernel, "moodStats", moodStatsBuffer);
+
         updateShader.GetKernelThreadGroupSizes(updateFriendsKernel, out updateThreadGroupSize, out _, out _);
         renderShader.GetKernelThreadGroupSizes(renderFriendsKernel, out renderThreadGroupSize, out _, out _);
         copyShader.GetKernelThreadGroupSizes(copyFriendsKernel, out copyThreadGroupSize, out _, out _);
+        aggregateShader.GetKernelThreadGroupSizes(aggregateFriendsKernel, out aggregateThreadGroupSize, out _, out _);
 
         SelectNewRandomFriends();
 
@@ -239,18 +258,21 @@ public class FriendManager : MonoBehaviour
         updateShader.SetInt("mouseX", Mathf.RoundToInt(Input.mousePosition.x));
         updateShader.SetInt("mouseY", Mathf.RoundToInt(Input.mousePosition.y));
         updateShader.SetBool("updateMood", updateMood);
-        updateShader.SetFloat("windowLeft", windowManager.foregroundMin.x);
-        updateShader.SetFloat("windowTop", windowManager.foregroundMin.y);
-        updateShader.SetFloat("windowRight", windowManager.foregroundMax.x);
-        updateShader.SetFloat("windowBottom", windowManager.foregroundMax.y);
-        updateShader.SetFloat("windowVelocityX", windowManager.foregroundVelocity.x);
-        updateShader.SetFloat("windowVelocityY", windowManager.foregroundVelocity.y);
+        updateShader.SetFloat("windowLeft", windowManager.ForegroundMin.x);
+        updateShader.SetFloat("windowTop", windowManager.ForegroundMin.y);
+        updateShader.SetFloat("windowRight", windowManager.ForegroundMax.x);
+        updateShader.SetFloat("windowBottom", windowManager.ForegroundMax.y);
+        updateShader.SetFloat("windowVelocityX", windowManager.ForegroundVelocity.x);
+        updateShader.SetFloat("windowVelocityY", windowManager.ForegroundVelocity.y);
         updateShader.SetInt("friendCount", friendCount);
         updateDispatchSize = Mathf.CeilToInt((float) friendCount / updateThreadGroupSize / FRIENDS_PER_INVOCATION);
         updateShader.Dispatch(updateFriendsKernel, updateDispatchSize, 1, 1);
 
         // Copy loop
         CopyFriendsToCPU();
+
+        // Aggregate loop
+        AggregateStatsToCPU();
 
         // Render loop
         RenderTexture oldRT = RenderTexture.active;
@@ -270,5 +292,13 @@ public class FriendManager : MonoBehaviour
         copyShader.Dispatch(copyFriendsKernel, copyDispatchSize, 1, 1);
 
         copyFriendBuffer.GetData(RandomFriends);
+    }
+
+    private void AggregateStatsToCPU() {
+        moodStatsBuffer.SetData(moodStatsDefault);
+        aggregateShader.SetInt("friendCount", friendCount);
+        aggregateDispatchSize = Mathf.CeilToInt((float) friendCount / aggregateThreadGroupSize / FRIENDS_PER_INVOCATION);
+        aggregateShader.Dispatch(aggregateFriendsKernel, aggregateDispatchSize, 1, 1);
+        moodStatsBuffer.GetData(MoodStats);
     }
 }

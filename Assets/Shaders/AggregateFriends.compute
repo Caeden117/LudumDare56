@@ -1,0 +1,39 @@
+#pragma kernel AggregateFriends
+
+#include "Friend.hlsl"
+
+#define MOOD_STATS_MAX 10
+
+int friendCount;
+StructuredBuffer<Friend> friendData;
+RWStructuredBuffer<int> moodStats;
+
+[numthreads(64, 1, 1)]
+void AggregateFriends(uint3 id : SV_DispatchThreadID)
+{
+    int _moodStats[MOOD_STATS_MAX];
+    for (int i = 0; i < MOOD_STATS_MAX; i++)
+    {
+        _moodStats[i] = 0;
+    }
+    
+    for (uint friendOffset = 0; friendOffset < FRIENDS_PER_INVOCATION; friendOffset++)
+    {
+        uint idx = id.x * FRIENDS_PER_INVOCATION + friendOffset;
+        if ((int) idx >= friendCount)
+        {
+            break;
+        }
+    
+        Friend this = friendData[idx];
+        
+        float mood = FRIEND_GET_MOOD(this) / 255.0;
+        int moodBin = (int) floor(mood * (MOOD_STATS_MAX - 0.001));
+        _moodStats[moodBin]++;
+    }
+    
+    for (int j = 0; j < MOOD_STATS_MAX; j++)
+    {
+        InterlockedAdd(moodStats[j], _moodStats[j]);
+    }
+}
