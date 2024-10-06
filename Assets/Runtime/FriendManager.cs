@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -6,6 +7,7 @@ using Random = UnityEngine.Random;
 public class FriendManager : MonoBehaviour
 {
     public Friend[] RandomFriends = new Friend[RANDOM_FRIEND_MAX];
+    public int FriendCount = 0;
 
     [SerializeField]
     private int initialFriendBurstCount = 0;
@@ -75,7 +77,6 @@ public class FriendManager : MonoBehaviour
 
     private bool initialized = false;
     private RenderTexture renderTexture;
-    private int friendCount = 0;
     private ComputeBuffer friendDataBuffer;
     private ComputeBuffer colorPaletteBuffer;
     private ComputeBuffer copyFriendIdxBuffer;
@@ -105,7 +106,7 @@ public class FriendManager : MonoBehaviour
     public int[] MoodStats { get; private set; } = new int[MOOD_STATS_MAX];
     private int[] moodStatsDefault = new int[MOOD_STATS_MAX];
 
-    private readonly int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
+    private int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
     private float updateMoodTimer = 0.0f;
 
     private void OnEnable() {
@@ -120,7 +121,7 @@ public class FriendManager : MonoBehaviour
         renderTexture.Create();
         output.texture = renderTexture;
 
-        friendCount = 0;
+        FriendCount = 0;
         Friend[] friends = new Friend[FRIEND_MAX];
         for (int i = 0; i < initialFriendBurstCount; i++) {
             float angle = Random.Range(0.0f, Mathf.PI * 2.0f);
@@ -183,7 +184,7 @@ public class FriendManager : MonoBehaviour
         updateShader.SetFloat("windowBottom", 0.0f);
         updateShader.SetFloat("windowVelocityX", 0.0f);
         updateShader.SetFloat("windowVelocityY", 0.0f);
-        updateShader.SetInt("friendCount", friendCount);
+        updateShader.SetInt("friendCount", FriendCount);
         updateShader.SetBuffer(updateFriendsKernel, "friendData", friendDataBuffer);
 
         renderShader.SetTexture(renderFriendsKernel, "renderTexture", renderTexture);
@@ -192,7 +193,7 @@ public class FriendManager : MonoBehaviour
         renderShader.SetInt("frameCount", 0);
         renderShader.SetBool("tiny", tiny);
         renderShader.SetBool("debugDrawMood", debugDrawMood);
-        renderShader.SetInt("friendCount", friendCount);
+        renderShader.SetInt("friendCount", FriendCount);
         renderShader.SetBuffer(renderFriendsKernel, "friendData", friendDataBuffer);
         renderShader.SetBuffer(renderFriendsKernel, "colorPalette", colorPaletteBuffer);
 
@@ -200,7 +201,7 @@ public class FriendManager : MonoBehaviour
         copyShader.SetBuffer(copyFriendsKernel, "randomFriendData", copyFriendBuffer);
         copyShader.SetBuffer(copyFriendsKernel, "randomFriendIdx", copyFriendIdxBuffer);
 
-        aggregateShader.SetInt("friendCount", friendCount);
+        aggregateShader.SetInt("friendCount", FriendCount);
         aggregateShader.SetBuffer(aggregateFriendsKernel, "friendData", friendDataBuffer);
         aggregateShader.SetBuffer(aggregateFriendsKernel, "moodStats", moodStatsBuffer);
 
@@ -216,11 +217,17 @@ public class FriendManager : MonoBehaviour
 
     public void SelectNewRandomFriends()
     {
-        for (var i = 0; i < RANDOM_FRIEND_MAX; i++)
-        {
-            randomFriendIdx[i] = Random.Range(0, friendCount);
-        }
+        var randomFriendHashmap = new HashSet<int>();
 
+        do
+        {
+            var randomNumber = Random.Range(0, FriendCount);
+            while (!randomFriendHashmap.Add(randomNumber)) {
+                randomNumber = Random.Range(0, FriendCount);
+            }
+        } while (randomFriendHashmap.Count < Mathf.Min(RANDOM_FRIEND_MAX, FriendCount));
+
+        randomFriendIdx = randomFriendHashmap.ToArray();
         copyFriendIdxBuffer.SetData(randomFriendIdx);
 
         CopyFriendsToCPU();
@@ -235,11 +242,11 @@ public class FriendManager : MonoBehaviour
     }
 
     private void LateUpdate() {
-        if (friendCount < initialFriendBurstCount) {
-            friendCount = Mathf.Min(initialFriendBurstCount, Mathf.FloorToInt(Time.time * initialFriendBurstRate));
+        if (FriendCount < initialFriendBurstCount) {
+            FriendCount = Mathf.Min(initialFriendBurstCount, Mathf.FloorToInt(Time.time * initialFriendBurstRate));
         }
 
-        if (friendCount <= 0)
+        if (FriendCount <= 0)
         {
             return;
         }
@@ -264,8 +271,8 @@ public class FriendManager : MonoBehaviour
         updateShader.SetFloat("windowBottom", windowManager.ForegroundMax.y);
         updateShader.SetFloat("windowVelocityX", windowManager.ForegroundVelocity.x);
         updateShader.SetFloat("windowVelocityY", windowManager.ForegroundVelocity.y);
-        updateShader.SetInt("friendCount", friendCount);
-        updateDispatchSize = Mathf.CeilToInt((float) friendCount / updateThreadGroupSize / FRIENDS_PER_INVOCATION);
+        updateShader.SetInt("friendCount", FriendCount);
+        updateDispatchSize = Mathf.CeilToInt((float) FriendCount / updateThreadGroupSize / FRIENDS_PER_INVOCATION);
         updateShader.Dispatch(updateFriendsKernel, updateDispatchSize, 1, 1);
 
         // Copy loop
@@ -282,8 +289,8 @@ public class FriendManager : MonoBehaviour
         renderShader.SetInt("frameCount", Time.frameCount);
         renderShader.SetBool("tiny", tiny);
         renderShader.SetBool("debugDrawMood", debugDrawMood);
-        renderShader.SetInt("friendCount", friendCount);
-        renderDispatchSize = Mathf.CeilToInt((float) friendCount / renderThreadGroupSize / FRIENDS_PER_INVOCATION);
+        renderShader.SetInt("friendCount", FriendCount);
+        renderDispatchSize = Mathf.CeilToInt((float) FriendCount / renderThreadGroupSize / FRIENDS_PER_INVOCATION);
         renderShader.Dispatch(renderFriendsKernel, renderDispatchSize, 1, 1);
     }
 
@@ -296,8 +303,8 @@ public class FriendManager : MonoBehaviour
 
     private void AggregateStatsToCPU() {
         moodStatsBuffer.SetData(moodStatsDefault);
-        aggregateShader.SetInt("friendCount", friendCount);
-        aggregateDispatchSize = Mathf.CeilToInt((float) friendCount / aggregateThreadGroupSize / FRIENDS_PER_INVOCATION);
+        aggregateShader.SetInt("friendCount", FriendCount);
+        aggregateDispatchSize = Mathf.CeilToInt((float) FriendCount / aggregateThreadGroupSize / FRIENDS_PER_INVOCATION);
         aggregateShader.Dispatch(aggregateFriendsKernel, aggregateDispatchSize, 1, 1);
         moodStatsBuffer.GetData(MoodStats);
     }
