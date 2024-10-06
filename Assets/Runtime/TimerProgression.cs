@@ -8,6 +8,7 @@ public class TimerProgression : MonoBehaviour
 {
     private const float PROGRESSION_TIMER_IN_MINUTES = 0.1f;
 
+    private RectTransform rectTransform;
     [SerializeField] private FriendManager friendManager;
     [SerializeField] private Sprite maxSprite;
     [SerializeField] private CanvasGroup canvasGroup;
@@ -18,6 +19,7 @@ public class TimerProgression : MonoBehaviour
 
     private void Start()
     {
+        rectTransform = GetComponent<RectTransform>();
         canvasGroup.alpha = 0.0f;
         TimerAsync().Forget();
     }
@@ -51,10 +53,20 @@ public class TimerProgression : MonoBehaviour
     public void OnButtonPress()
     {
         button.interactable = false;
+        ButtonPressAsync().Forget();
         if (friendManager.AddNewFriends()) {
             TimerAsync().Forget();
         } else {
             buttonImage.sprite = maxSprite;
         }
+    }
+
+    private async UniTask ButtonPressAsync() {
+        await LMotion.Create(1.0f, 0.9f, 0.1f)
+            .WithEase(Ease.OutQuad)
+            .Bind(it => rectTransform.localScale = Vector3.one * it);
+        LMotion.Create(0.9f, 1.0f, 0.1f)
+            .WithEase(Ease.InQuad)
+            .Bind(it => rectTransform.localScale = Vector3.one * it).ToUniTask().Forget();
     }
 }
