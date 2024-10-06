@@ -9,6 +9,14 @@ using Random = UnityEngine.Random;
 
 public class Popup : MonoBehaviour
 {
+    enum MoodCategory {
+        UNSET,
+        UNHAPPY,
+        SLIGHTLY_UNHAPPY,
+        SLIGHTLY_HAPPY,
+        HAPPY
+    };
+
     [SerializeField] private CanvasGroup canvasGroup;
 
     [Space, SerializeField] private Image moodImage;
@@ -32,6 +40,8 @@ public class Popup : MonoBehaviour
     private Vector2 idleOffset = Vector2.zero;
     private Vector2 bounceOffset = Vector2.zero;
 
+    private MoodCategory moodCategory = MoodCategory.UNSET;
+    private MoodCategory lastMoodCategory = MoodCategory.UNSET;
     private CancellationToken cancellationToken;
 
     public void Initialize(FriendManager friendManager, int randomFriendIdx)
@@ -48,34 +58,8 @@ public class Popup : MonoBehaviour
         gameObject.SetActive(false);
         IdleBounce().Forget();
 
-        var friend = friendManager.RandomFriends[randomFriendIdx];
-        var mood = friend.mood - 127;
-
-        var moodSprites = mood switch
-        {
-            >= 64 => happySprites,
-            >= 0 => slightlyHappySprites,
-            >= -64 => slightlyUnhappySprites,
-            < -64 => unhappySprites
-        };
-        moodImage.sprite = moodSprites[Random.Range(0, moodSprites.Length)];
-
-        var moodColor = mood switch
-        {
-            >= 64 => happyColor,
-            >= 0 => slightlyHappyColor,
-            >= -64 => slightlyUnhappyColor,
-            < -64 => unhappyColor
-        };
-        outlineImage.color = moodColor;
-        if (mood >= 64)
-        {
-            HappyBounce().Forget();
-        }
-        else if (mood < -64)
-        {
-            SadBounce().Forget();
-        }
+        lastMoodCategory = MoodCategory.UNSET;
+        moodCategory = MoodCategory.UNSET;
     }
 
     public async UniTask FadeIn()
@@ -100,7 +84,7 @@ public class Popup : MonoBehaviour
     // TODO: Hook to positive mood
     public async UniTask HappyBounce()
     {
-        while (!cancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested && moodCategory == MoodCategory.HAPPY)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(Random.Range(0, 3)), cancellationToken: cancellationToken);
 
@@ -119,7 +103,7 @@ public class Popup : MonoBehaviour
     // TODO: Hook to negative mood
     public async UniTask SadBounce()
     {
-        while (!cancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested && moodCategory == MoodCategory.UNHAPPY)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(Random.Range(0, 3)), cancellationToken: cancellationToken);
 
@@ -135,9 +119,46 @@ public class Popup : MonoBehaviour
         }
     }
 
-    private void LateUpdate()
-    {
-        var friendPosition = friendManager.RandomFriends[randomFriendIdx].position;
+    private void LateUpdate() {
+        var friend = friendManager.RandomFriends[randomFriendIdx];
+        var mood = friend.mood - 127;
+        moodCategory = mood switch {
+            >= 64 => MoodCategory.HAPPY,
+            >= 0 => MoodCategory.SLIGHTLY_HAPPY,
+            >= -64 => MoodCategory.SLIGHTLY_UNHAPPY,
+            < -64 => MoodCategory.UNHAPPY
+        };
+
+        if (moodCategory != lastMoodCategory) {
+            var moodSprites = moodCategory switch {
+                MoodCategory.HAPPY => happySprites,
+                MoodCategory.SLIGHTLY_HAPPY => slightlyHappySprites,
+                MoodCategory.SLIGHTLY_UNHAPPY => slightlyUnhappySprites,
+                MoodCategory.UNHAPPY => unhappySprites,
+                _ => null
+            };
+            moodImage.sprite = moodSprites[Random.Range(0, moodSprites.Length)];
+
+            var moodColor = moodCategory switch {
+                MoodCategory.HAPPY => happyColor,
+                MoodCategory.SLIGHTLY_HAPPY => slightlyHappyColor,
+                MoodCategory.SLIGHTLY_UNHAPPY => slightlyUnhappyColor,
+                MoodCategory.UNHAPPY => unhappyColor,
+                _ => Color.black
+            };
+            outlineImage.color = moodColor;
+
+            if (moodCategory == MoodCategory.HAPPY) {
+                HappyBounce().Forget();
+            }
+            else if (moodCategory == MoodCategory.UNHAPPY) {
+                SadBounce().Forget();
+            }
+
+            lastMoodCategory = moodCategory;
+        }
+
+        var friendPosition = friend.position;
         friendPosition.y = Screen.height - friendPosition.y;
 
         rectTransform.anchoredPosition = friendPosition + idleOffset + bounceOffset + new Vector2(0.5f, 0.5f);
