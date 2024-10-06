@@ -12,7 +12,7 @@ public class Popup : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
 
     [Space, SerializeField] private Image moodImage;
-    [SerializeField] private Outline[] outlines;
+    [SerializeField] private Image outlineImage;
     [SerializeField] private Sprite[] happySprites;
     [SerializeField] private Color happyColor;
     [SerializeField] private Sprite[] slightlyHappySprites;
@@ -67,11 +67,7 @@ public class Popup : MonoBehaviour
             >= -64 => slightlyUnhappyColor,
             < -64 => unhappyColor
         };
-        for (var i = 0; i < outlines.Length; i++)
-        {
-            outlines[i].effectColor = moodColor;
-        }
-
+        outlineImage.color = moodColor;
         if (mood >= 64)
         {
             HappyBounce().Forget();

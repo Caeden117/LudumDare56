@@ -912,6 +912,7 @@ MonoBehaviour:
   - '#F56B1F'
   - '#96E3FF'
   - '#89CFF0'
+  debugDrawMood: 0
 --- !u!4 &1560855994
 Transform:
   m_ObjectHideFlags: 0
