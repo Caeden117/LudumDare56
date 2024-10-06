@@ -384,7 +384,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1391836518}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &619394800
@@ -1069,6 +1070,65 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1391836517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1391836518}
+  - component: {fileID: 1391836519}
+  m_Layer: 0
+  m_Name: the MEOWnager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1391836518
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1391836517}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 519420032}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1391836519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1391836517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64039f367d4da1943a27fd1499058c39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioSourcePrefab: {fileID: 5546169835404727050, guid: b33311ad854e70f409b206c0b4aed0c7, type: 3}
+  friendManager: {fileID: 1560855993}
+  happyClips:
+  - {fileID: 8300000, guid: deaa85760265d0740a126bf34ee8c197, type: 3}
+  - {fileID: 8300000, guid: 650ac2588b92aff4884354d0bb1e90a9, type: 3}
+  - {fileID: 8300000, guid: 854e05d324f976e42b47e331e638f8b3, type: 3}
+  neutralAudioClips:
+  - {fileID: 8300000, guid: 55f33165455f7234e8daeabcade683ec, type: 3}
+  - {fileID: 8300000, guid: a17d119da4d085444b82a00eaa93780d, type: 3}
+  - {fileID: 8300000, guid: 4961ecdafe81e8b43b587f0efa97353c, type: 3}
+  unhappyClips:
+  - {fileID: 8300000, guid: cbd133aae003c9d4786c7f80d42815da, type: 3}
+  - {fileID: 8300000, guid: 1a7e32a846fcc304ea7b5be02b22712b, type: 3}
+  - {fileID: 8300000, guid: 27bc5b2a86671cf4fa876d139a432655, type: 3}
+  - {fileID: 8300000, guid: 6f9b197314548314d835f04731fba965, type: 3}
 --- !u!1 &1410531474
 GameObject:
   m_ObjectHideFlags: 0
