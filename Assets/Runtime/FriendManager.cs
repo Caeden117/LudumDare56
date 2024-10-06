@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class FriendManager : MonoBehaviour
@@ -142,10 +143,36 @@ public class FriendManager : MonoBehaviour
         for (int i = 0; i < FRIEND_MAX; i++) {
             // TODO: For the last half of the array, add in some friends falling from the ceiling and shooting out of the sides
             float angle = Random.Range(0.0f, Mathf.PI * 2.0f);
-            float velocity = Random.Range(0.0f, 1000.0f);
+            float speed = Random.Range(0.0f, 1000.0f);
+            Vector2 position;
+            Vector2 velocity;
+
+            if (i < 5000000 || (i >= 6000000 && (i % 3) == 0) || i >= 7500000) {
+                position.x = Screen.width * 0.5f;
+                position.y = Screen.height * 0.5f;
+                velocity.x = speed * Mathf.Cos(angle);
+                velocity.y = speed * Mathf.Sin(angle);
+            } else {
+                if (i < 5500000 || ((i % 3) != 1)) {
+                    float curtainEdge = Random.value >= 0.5f ? Screen.width : 0.0f;
+                    float curtainSweep = Utils.MapRange(Mathf.Sqrt(Utils.MapRange(i, 5000000, 5500000, 0.0f, 1.0f)), 0.0f, 1.0f, 0.05f, 0.6f);
+                    position.x = Random.Range(curtainEdge, Mathf.Lerp(curtainEdge, Screen.width * 0.5f, curtainSweep));
+                    position.y = Random.Range(-10.0f, 0.0f);
+                    velocity.x = Random.Range(-10.0f, 10.0f);
+                    velocity.y = Random.Range(-20.0f, 0.0f);
+                } else {
+                    bool side = Random.value >= 0.5f;
+                    float cannonEdge = side ? Screen.width : 0.0f;
+                    position.x = cannonEdge + Random.Range(-20.0f, 20.0f);
+                    position.y = Screen.height + Random.Range(-40.0f, -20.0f);
+                    velocity.x = (side ? -1.0f : 1.0f) * Random.Range(400.0f, 600.0f);
+                    velocity.y = Random.Range(-1200.0f, -1000.0f);
+                }
+            }
+
             friends[i] = new Friend() {
-                position = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f),
-                velocity = new Vector2(velocity * Mathf.Cos(angle), velocity * Mathf.Sin(angle)),
+                position = position,
+                velocity = velocity,
                 packed0 = 0,
                 fvar0 = 0.0f,
                 fvar1 = 0.0f,
