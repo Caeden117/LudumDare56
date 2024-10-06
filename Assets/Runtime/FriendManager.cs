@@ -260,9 +260,9 @@ public class FriendManager : MonoBehaviour
         updateLastMoodTimer = 0.0f;
     }
 
-    public bool AddNewFriends() {
+    public float AddNewFriends() {
         if (friendCountStep >= friendCountSteps.Length - 1) {
-            return false;
+            return 0.0f;
         }
 
         friendCountStep++;
@@ -284,7 +284,7 @@ public class FriendManager : MonoBehaviour
             .ToUniTask()
             .Forget();
 
-        return friendCountStep < friendCountSteps.Length - 1;
+        return friendCountStep >= friendCountSteps.Length - 1 ? 0.0f : duration;
     }
 
     public void SelectNewRandomFriends()

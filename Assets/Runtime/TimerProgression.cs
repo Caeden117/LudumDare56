@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 public class TimerProgression : MonoBehaviour
 {
-    private const float PROGRESSION_TIMER_IN_MINUTES = 0.1f;
+    [SerializeField]
+    private float minimumUnlockDuration = 5.0f;
 
     private RectTransform rectTransform;
     [SerializeField] private FriendManager friendManager;
@@ -21,10 +22,10 @@ public class TimerProgression : MonoBehaviour
     {
         rectTransform = GetComponent<RectTransform>();
         canvasGroup.alpha = 0.0f;
-        TimerAsync().Forget();
+        TimerAsync(minimumUnlockDuration).Forget();
     }
 
-    private async UniTask TimerAsync()
+    private async UniTask TimerAsync(float duration)
     {
         LMotion.Create(1f, 0f, 0.5f)
             .WithEase(Ease.OutQuad)
@@ -34,7 +35,7 @@ public class TimerProgression : MonoBehaviour
 
         await LMotion.Create(canvasGroup.alpha, 0.5f, 1f).BindToCanvasGroupAlpha(canvasGroup);
 
-        await LMotion.Create(0f, 1f, PROGRESSION_TIMER_IN_MINUTES * 60).Bind(it => progressionImage.fillAmount = it);
+        await LMotion.Create(0f, 1f, duration).Bind(it => progressionImage.fillAmount = it);
 
         button.interactable = true;
 
@@ -54,8 +55,9 @@ public class TimerProgression : MonoBehaviour
     {
         button.interactable = false;
         ButtonPressAsync().Forget();
-        if (friendManager.AddNewFriends()) {
-            TimerAsync().Forget();
+        float duration = friendManager.AddNewFriends();
+        if (duration > 0.0f) {
+            TimerAsync(Mathf.Max(minimumUnlockDuration, duration)).Forget();
         } else {
             buttonImage.sprite = maxSprite;
         }
