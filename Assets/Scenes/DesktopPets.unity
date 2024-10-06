@@ -658,7 +658,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -90.09, y: 0}
+  m_AnchoredPosition: {x: -90, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &837157777
@@ -673,10 +673,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71e96966ffd18fb46a5e5653dec98a46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  friendManager: {fileID: 1560855993}
+  maxSprite: {fileID: 3643105169464052631, guid: 936d285275ffaa44bbb707134d56eaf3, type: 3}
   canvasGroup: {fileID: 837157778}
   progressionImage: {fileID: 993636479}
   buttonRect: {fileID: 496905591}
   button: {fileID: 496905592}
+  buttonImage: {fileID: 496905593}
 --- !u!225 &837157778
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1218,8 +1221,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f940287e4f99c2408e78085374b1d59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialFriendBurstCount: 1024
-  initialFriendBurstRate: 1024
+  initialFriendBurstCount: 1
+  initialFriendBurstRate: 1
   tiny: 0
   updateShader: {fileID: 7200000, guid: 31eecf2e42c97d341aa9c8590bdd18f9, type: 3}
   renderShader: {fileID: 7200000, guid: db9cf2586f740bc48bbb2e9479af3289, type: 3}

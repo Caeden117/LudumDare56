@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 9a355090ee0008a49819356861f09f08
+guid: 936d285275ffaa44bbb707134d56eaf3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8335121031177659847
-    second: AddFriend_0
+      213: 3643105169464052631
+    second: MaxFriends_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AddFriend_0
+      name: MaxFriends_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 93a94c06593b35c80800000000000000
-      internalID: -8335121031177659847
+      spriteID: 79b4b4189d8ee8230800000000000000
+      internalID: 3643105169464052631
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      AddFriend_0: -8335121031177659847
+      MaxFriends_0: 3643105169464052631
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

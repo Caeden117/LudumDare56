@@ -8,10 +8,13 @@ public class TimerProgression : MonoBehaviour
 {
     private const float PROGRESSION_TIMER_IN_MINUTES = 0.1f;
 
+    [SerializeField] private FriendManager friendManager;
+    [SerializeField] private Sprite maxSprite;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private Image progressionImage;
     [SerializeField] private RectTransform buttonRect;
     [SerializeField] private Button button;
+    [SerializeField] private Image buttonImage;
 
     private void Start()
     {
@@ -47,9 +50,11 @@ public class TimerProgression : MonoBehaviour
 
     public void OnButtonPress()
     {
-        // TODO: Spawn more friends
-
         button.interactable = false;
-        TimerAsync().Forget();
+        if (friendManager.AddNewFriends()) {
+            TimerAsync().Forget();
+        } else {
+            buttonImage.sprite = maxSprite;
+        }
     }
 }
