@@ -89,7 +89,8 @@ public class FriendManager : MonoBehaviour
     private int copyDispatchSize;
 
     private const int FRIEND_STRIDE = 8 * sizeof(float) + 1 * sizeof(int);
-    private const int FRIEND_MAX = 400000000 / FRIEND_STRIDE;
+    private const int FRIEND_MAX = 2000000000 / FRIEND_STRIDE;
+    private const int FRIENDS_PER_INVOCATION = 64;
     private const int RANDOM_FRIEND_MAX = 64;
     private const int COLOR_PALETTE_STRIDE = sizeof(float) * 3;
     private const int COLOR_PALETTE_MAX = 1 << 8;
@@ -245,7 +246,7 @@ public class FriendManager : MonoBehaviour
         updateShader.SetFloat("windowVelocityX", windowManager.foregroundVelocity.x);
         updateShader.SetFloat("windowVelocityY", windowManager.foregroundVelocity.y);
         updateShader.SetInt("friendCount", friendCount);
-        updateDispatchSize = Mathf.CeilToInt((float) friendCount / updateThreadGroupSize);
+        updateDispatchSize = Mathf.CeilToInt((float) friendCount / updateThreadGroupSize / FRIENDS_PER_INVOCATION);
         updateShader.Dispatch(updateFriendsKernel, updateDispatchSize, 1, 1);
 
         // Copy loop
@@ -260,7 +261,7 @@ public class FriendManager : MonoBehaviour
         renderShader.SetBool("tiny", tiny);
         renderShader.SetBool("debugDrawMood", debugDrawMood);
         renderShader.SetInt("friendCount", friendCount);
-        renderDispatchSize = Mathf.CeilToInt((float) friendCount / renderThreadGroupSize);
+        renderDispatchSize = Mathf.CeilToInt((float) friendCount / renderThreadGroupSize / FRIENDS_PER_INVOCATION);
         renderShader.Dispatch(renderFriendsKernel, renderDispatchSize, 1, 1);
     }
 

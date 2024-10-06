@@ -58,46 +58,50 @@ float3 hueToColor(float hue)
 [numthreads(64, 1, 1)]
 void RenderFriends(uint3 id: SV_DispatchThreadID)
 {
-    if ((int) id.x >= friendCount)
+    for (uint friendOffset = 0; friendOffset < FRIENDS_PER_INVOCATION; friendOffset++)
     {
-        return;
-    }
-    
-    Friend this = friendData[id.x];
-    
-    int2 pos = int2((int) round(this.position.x), (int) round(this.position.y));
-    
-    float3 color = colorPalette[FRIEND_GET_COLOR_IDX(this)];
-    
-    if (debugDrawMood)
-    {
-        color = hueToColor(FRIEND_GET_MOOD(this) / 255.0 * 0.333333);
-    }
-    
-    // Draw black outline around friend, avoiding overwriting any friends that have been rendered already
-    int range = tiny ? 1 : 2;
-    for (int ox = -range; ox <= range; ox++)
-    {
-        for (int oy = -range; oy <= range; oy++)
+        uint idx = id.x * FRIENDS_PER_INVOCATION + friendOffset;
+        if ((int) idx >= friendCount)
         {
-            int2 opos = pos + int2(ox, oy);
-            if (opos.x < 0 || opos.y < 0 || opos.x >= screenWidth || opos.y >= screenHeight)
+            return;
+        }
+    
+        Friend this = friendData[idx];
+    
+        int2 pos = int2((int) round(this.position.x), (int) round(this.position.y));
+    
+        float3 color = colorPalette[FRIEND_GET_COLOR_IDX(this)];
+    
+        if (debugDrawMood)
+        {
+            color = hueToColor(FRIEND_GET_MOOD(this) / 255.0 * 0.333333);
+        }
+    
+        // Draw black outline around friend, avoiding overwriting any friends that have been rendered already
+        int range = tiny ? 1 : 2;
+        for (int ox = -range; ox <= range; ox++)
+        {
+            for (int oy = -range; oy <= range; oy++)
             {
-                continue;
-            }
+                int2 opos = pos + int2(ox, oy);
+                if (opos.x < 0 || opos.y < 0 || opos.x >= screenWidth || opos.y >= screenHeight)
+                {
+                    continue;
+                }
             
-            if (luminance(renderTexture[opos]) > 0.0)
-            {
-                continue;
-            }
+                if (luminance(renderTexture[opos]) > 0.0)
+                {
+                    continue;
+                }
             
-            if (!tiny || ox == 0 && oy == 0)
-            {
-                renderTexture[opos] = float4(color, 1.0);
-            }
-            else
-            {
-                renderTexture[opos] = float4(0.0, 0.0, 0.0, 1.0);
+                if (!tiny || ox == 0 && oy == 0)
+                {
+                    renderTexture[opos] = float4(color, 1.0);
+                }
+                else
+                {
+                    renderTexture[opos] = float4(0.0, 0.0, 0.0, 1.0);
+                }
             }
         }
     }

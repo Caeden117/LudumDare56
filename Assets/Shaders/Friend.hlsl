@@ -13,6 +13,8 @@ struct Friend {
     float fvar3;
 };
 
+#define FRIENDS_PER_INVOCATION 64u
+
 #define FRIEND_GET_STATE(this) (this.packed0 & 0xFu)
 #define FRIEND_GET_MOOD(this) ((this.packed0 >> 4) & 0xFFu)
 #define FRIEND_GET_COLOR_IDX(this) ((this.packed0 >> 12) & 0xFFu)
