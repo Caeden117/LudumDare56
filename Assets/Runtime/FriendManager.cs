@@ -78,7 +78,7 @@ public class FriendManager : MonoBehaviour
         }
     };
 
-    private int friendCountStep = 0;
+    public int FriendCountStep { get; private set; } = 0;
     private int[] friendCountSteps = {
         1, 2, 5,
         10, 20, 50,
@@ -261,13 +261,13 @@ public class FriendManager : MonoBehaviour
     }
 
     public float AddNewFriends() {
-        if (friendCountStep >= friendCountSteps.Length - 1) {
+        if (FriendCountStep >= friendCountSteps.Length - 1) {
             return 0.0f;
         }
 
-        friendCountStep++;
+        FriendCountStep++;
 
-        float duration = friendCountStep switch {
+        float duration = FriendCountStep switch {
             < 3 => 0.25f,
             < 6 => 0.5f,
             < 9 => 2.0f,
@@ -279,12 +279,12 @@ public class FriendManager : MonoBehaviour
         };
 
         LMotion.Create(0.0f, 1.0f, duration)
-            .WithEase(friendCountStep >= 21 ? Ease.InExpo : Ease.InCubic)
-            .Bind(it => FriendCount = Mathf.CeilToInt(Mathf.Lerp(friendCountSteps[friendCountStep - 1], friendCountSteps[friendCountStep], it)))
+            .WithEase(FriendCountStep >= 21 ? Ease.InExpo : Ease.InCubic)
+            .Bind(it => FriendCount = Mathf.CeilToInt(Mathf.Lerp(friendCountSteps[FriendCountStep - 1], friendCountSteps[FriendCountStep], it)))
             .ToUniTask()
             .Forget();
 
-        return friendCountStep >= friendCountSteps.Length - 1 ? 0.0f : duration;
+        return FriendCountStep >= friendCountSteps.Length - 1 ? 0.0f : duration;
     }
 
     public void SelectNewRandomFriends()

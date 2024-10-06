@@ -43,7 +43,7 @@ public class InfoUI : MonoBehaviour {
 
                 float moodPortion = ((float) friendManager.MoodStats[i]) / mostPopularMood;
                 float currentWidth = moodBars[i].sizeDelta.x;
-                float targetWidth = moodPortion * 166.0f;
+                float targetWidth = moodPortion * 150.0f;
                 float newWidth = Utils.TemporalLerp(currentWidth, targetWidth, 0.1f);
                 moodBars[i].SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, newWidth);
             }

@@ -2525,6 +2525,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minimumUnlockDuration: 5
   friendManager: {fileID: 1560855993}
+  goldManager: {fileID: 13690895}
   maxSprite: {fileID: 3643105169464052631, guid: 936d285275ffaa44bbb707134d56eaf3, type: 3}
   canvasGroup: {fileID: 837157778}
   progressionImage: {fileID: 993636479}

@@ -4,13 +4,16 @@ using LitMotion.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TimerProgression : MonoBehaviour
-{
+public class TimerProgression : MonoBehaviour {
     [SerializeField]
     private float minimumUnlockDuration = 5.0f;
 
+    [SerializeField]
+    private bool debugFreeUpgrade;
+
     private RectTransform rectTransform;
     [SerializeField] private FriendManager friendManager;
+    [SerializeField] private GoldManager goldManager;
     [SerializeField] private Sprite maxSprite;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private Image progressionImage;
@@ -18,15 +21,34 @@ public class TimerProgression : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private Image buttonImage;
 
-    private void Start()
-    {
+    private bool cooldown = false;
+
+    private decimal[] costSteps = {
+        10m, 50m, 250m,
+        1000m, 2000m, 5000m,
+        10000m, 20000m, 50000m,
+        100000m, 200000m, 500000m,
+        1000000m, 2000000m, 5000000m,
+        10000000m, 20000000m, 50000000m,
+        100000000m, 200000000m, 500000000m,
+        1000000000m
+    };
+
+    private void Start() {
         rectTransform = GetComponent<RectTransform>();
         canvasGroup.alpha = 0.0f;
         TimerAsync(minimumUnlockDuration).Forget();
     }
 
-    private async UniTask TimerAsync(float duration)
-    {
+    private void Update() {
+        button.interactable = !cooldown
+            && (debugFreeUpgrade || goldManager.Gold >= costSteps[friendManager.FriendCountStep])
+            && friendManager.FriendCountStep < costSteps.Length - 1;
+    }
+
+    private async UniTask TimerAsync(float duration) {
+        cooldown = true;
+
         LMotion.Create(1f, 0f, 0.5f)
             .WithEase(Ease.OutQuad)
             .Bind(it => progressionImage.fillAmount = it)
@@ -36,8 +58,6 @@ public class TimerProgression : MonoBehaviour
         await LMotion.Create(canvasGroup.alpha, 0.5f, 1f).BindToCanvasGroupAlpha(canvasGroup);
 
         await LMotion.Create(0f, 1f, duration).Bind(it => progressionImage.fillAmount = it);
-
-        button.interactable = true;
 
         LMotion.Create(0f, 360f, 1.5f)
             .WithEase(Ease.OutCirc)
@@ -49,16 +69,20 @@ public class TimerProgression : MonoBehaviour
             .BindToCanvasGroupAlpha(canvasGroup)
             .ToUniTask()
             .Forget();
+
+        cooldown = false;
     }
 
-    public void OnButtonPress()
-    {
-        button.interactable = false;
+    public void OnButtonPress() {
         ButtonPressAsync().Forget();
+        if (!debugFreeUpgrade) {
+            goldManager.Gold -= costSteps[friendManager.FriendCountStep];
+        }
         float duration = friendManager.AddNewFriends();
         if (duration > 0.0f) {
             TimerAsync(Mathf.Max(minimumUnlockDuration, duration)).Forget();
-        } else {
+        }
+        else {
             buttonImage.sprite = maxSprite;
         }
     }
