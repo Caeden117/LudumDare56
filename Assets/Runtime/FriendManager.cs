@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using LitMotion;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -8,6 +9,7 @@ using Random = UnityEngine.Random;
 public class FriendManager : MonoBehaviour
 {
     public Friend[] RandomFriends = new Friend[RANDOM_FRIEND_MAX];
+    public int FriendCount { get; private set; } = 0;
 
     [SerializeField]
     private int initialFriendBurstCount = 0;
@@ -89,7 +91,6 @@ public class FriendManager : MonoBehaviour
 
     private bool initialized = false;
     private RenderTexture renderTexture;
-    public int FriendCount { get; private set; } = 0;
     private ComputeBuffer friendDataBuffer;
     private ComputeBuffer colorPaletteBuffer;
     private ComputeBuffer copyFriendIdxBuffer;
@@ -119,7 +120,7 @@ public class FriendManager : MonoBehaviour
     public int[] MoodStats { get; private set; } = new int[MOOD_STATS_MAX];
     private int[] moodStatsDefault = new int[MOOD_STATS_MAX];
 
-    private readonly int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
+    private int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
     private float updateMoodTimer = 0.0f;
 
     private void OnEnable() {
@@ -258,11 +259,17 @@ public class FriendManager : MonoBehaviour
 
     public void SelectNewRandomFriends()
     {
-        for (var i = 0; i < RANDOM_FRIEND_MAX; i++)
-        {
-            randomFriendIdx[i] = Random.Range(0, FriendCount);
-        }
+        var randomFriendHashmap = new HashSet<int>();
 
+        do
+        {
+            var randomNumber = Random.Range(0, FriendCount);
+            while (!randomFriendHashmap.Add(randomNumber)) {
+                randomNumber = Random.Range(0, FriendCount);
+            }
+        } while (randomFriendHashmap.Count < Mathf.Min(RANDOM_FRIEND_MAX, FriendCount));
+
+        randomFriendIdx = randomFriendHashmap.ToArray();
         copyFriendIdxBuffer.SetData(randomFriendIdx);
 
         CopyFriendsToCPU();
