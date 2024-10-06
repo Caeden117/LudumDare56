@@ -4,11 +4,23 @@ using LitMotion.Extensions;
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class Popup : MonoBehaviour
 {
     [SerializeField] private CanvasGroup canvasGroup;
+
+    [Space, SerializeField] private Image moodImage;
+    [SerializeField] private Outline[] outlines;
+    [SerializeField] private Sprite[] happySprites;
+    [SerializeField] private Color happyColor;
+    [SerializeField] private Sprite[] slightlyHappySprites;
+    [SerializeField] private Color slightlyHappyColor;
+    [SerializeField] private Sprite[] slightlyUnhappySprites;
+    [SerializeField] private Color slightlyUnhappyColor;
+    [SerializeField] private Sprite[] unhappySprites;
+    [SerializeField] private Color unhappyColor;
 
     private FriendManager friendManager;
     private int randomFriendIdx;
@@ -35,6 +47,39 @@ public class Popup : MonoBehaviour
 
         gameObject.SetActive(false);
         IdleBounce().Forget();
+
+        var friend = friendManager.RandomFriends[randomFriendIdx];
+        var mood = friend.mood - 127;
+
+        var moodSprites = mood switch
+        {
+            >= 64 => happySprites,
+            >= 0 => slightlyHappySprites,
+            >= -64 => slightlyUnhappySprites,
+            < -64 => unhappySprites
+        };
+        moodImage.sprite = moodSprites[Random.Range(0, moodSprites.Length)];
+
+        var moodColor = mood switch
+        {
+            >= 64 => happyColor,
+            >= 0 => slightlyHappyColor,
+            >= -64 => slightlyUnhappyColor,
+            < -64 => unhappyColor
+        };
+        for (var i = 0; i < outlines.Length; i++)
+        {
+            outlines[i].effectColor = moodColor;
+        }
+
+        if (mood >= 64)
+        {
+            HappyBounce().Forget();
+        }
+        else if (mood < -64)
+        {
+            SadBounce().Forget();
+        }
     }
 
     public async UniTask FadeIn()

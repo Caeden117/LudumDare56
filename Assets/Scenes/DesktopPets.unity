@@ -902,6 +902,16 @@ MonoBehaviour:
   windowManager: {fileID: 638967636}
   customColorPalette:
   - '#AFA5FD'
+  - '#5FD849'
+  - '#88C0E2'
+  - '#6A558F'
+  - '#D62D09'
+  - '#792987'
+  - '#5D3FD3'
+  - '#FFFAA0'
+  - '#F56B1F'
+  - '#96E3FF'
+  - '#89CFF0'
 --- !u!4 &1560855994
 Transform:
   m_ObjectHideFlags: 0

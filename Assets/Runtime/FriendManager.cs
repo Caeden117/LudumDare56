@@ -121,7 +121,7 @@ public class FriendManager : MonoBehaviour
                 fvar3 = 0.0f,
 
                 state = 0,
-                mood = 128,
+                mood = (byte)Random.Range(127 - 40, 127 + 80), // starting mood: -40 to 80
                 colorIdx = (byte) Random.Range(0, COLOR_PALETTE_MAX)
             };
         }
