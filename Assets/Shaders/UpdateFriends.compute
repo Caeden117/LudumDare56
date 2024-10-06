@@ -45,17 +45,17 @@ void SwitchStateWindowSeeking(inout Friend this, inout uint rngState)
 void SwitchStateWindowRiding(inout Friend this, inout uint rngState)
 {
     FRIEND_SET_STATE(this, FRIEND_STATE_WINDOW_RIDING);
-    if (abs(this.position.x - windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE)
+    if (floatDist(this.position.x, windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = 0.0;
         WINDOW_RIDING_POS_Y(this) = this.position.y - windowTop;
     }
-    else if (abs(this.position.x - windowRight) <= WINDOW_RIDING_SNAP_DISTANCE)
+    else if (floatDist(this.position.x, windowRight) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = windowRight - windowLeft;
         WINDOW_RIDING_POS_Y(this) = this.position.y - windowTop;
     }
-    else if (abs(this.position.y - windowTop) <= WINDOW_RIDING_SNAP_DISTANCE)
+    else if (floatDist(this.position.y, windowTop) <= WINDOW_RIDING_SNAP_DISTANCE)
     {
         WINDOW_RIDING_POS_X(this) = this.position.x - windowLeft;
         WINDOW_RIDING_POS_Y(this) = 0.0;
@@ -189,9 +189,9 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                   && this.position.x <= windowRight
                   && this.position.y >= windowTop
                   && this.position.y <= windowBottom
-                  && (abs(this.position.x - windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE
-                  || abs(this.position.x - windowRight) <= WINDOW_RIDING_SNAP_DISTANCE
-                  || abs(this.position.y - windowTop) <= WINDOW_RIDING_SNAP_DISTANCE))
+                  && (floatDist(this.position.x, windowLeft) <= WINDOW_RIDING_SNAP_DISTANCE
+                  || floatDist(this.position.x, windowRight) <= WINDOW_RIDING_SNAP_DISTANCE
+                  || floatDist(this.position.y, windowTop) <= WINDOW_RIDING_SNAP_DISTANCE))
                 {
                     SwitchStateWindowRiding(this, rngState);
                 }
@@ -268,16 +268,16 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     moodChange = -0.02;
                     break;
                 case FRIEND_STATE_WINDOW_RIDING:
-                    moodChange = 0.07;
+                    moodChange = 0.09;
                     break;
                 case FRIEND_STATE_HUNGRY:
                     moodChange = -0.04;
                     break;
             }
         
-            if (abs(this.position.x - mouseX) <= 50.0 && abs(this.position.y - mouseY) <= 50.0)
+            if (floatDist(this.position.x, mouseX) <= 100.0 && floatDist(this.position.y, mouseY) <= 100.0)
             {
-                moodChange += 0.06;
+                moodChange += 0.12;
             }
         
             mood = clamp(mood + RandomValue(rngState) * moodChange, 0.0, 1.0);
