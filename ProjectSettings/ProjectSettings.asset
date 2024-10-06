@@ -573,7 +573,10 @@ PlayerSettings:
   webGLWebAssemblyBigInt: 0
   webGLCloseOnQuit: 0
   webWasm2023: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: STEAMAUDIO_ENABLED
+    Standalone: STEAMAUDIO_ENABLED
+    iPhone: STEAMAUDIO_ENABLED
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
