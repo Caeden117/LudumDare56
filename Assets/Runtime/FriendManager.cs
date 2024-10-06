@@ -122,6 +122,8 @@ public class FriendManager : MonoBehaviour
 
     private int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
     private float updateMoodTimer = 0.0f;
+    private float updateLastMoodTimer = 0.0f;
+    private const int MOOD_SWEEP_MAX = 64;
 
     private void OnEnable() {
         if (initialized) {
@@ -228,6 +230,7 @@ public class FriendManager : MonoBehaviour
         SelectNewRandomFriends();
 
         updateMoodTimer = 0.0f;
+        updateLastMoodTimer = 0.0f;
     }
 
     public bool AddNewFriends() {
@@ -293,20 +296,22 @@ public class FriendManager : MonoBehaviour
             return;
         }
 
-        bool updateMood = false;
-
-        updateMoodTimer -= Time.deltaTime;
-        if (updateMoodTimer <= 0.0f) {
-            updateMoodTimer += 1.0f;
-            updateMood = true;
+        updateLastMoodTimer = updateMoodTimer;
+        updateMoodTimer += Time.deltaTime;
+        if (updateMoodTimer >= 1.0f) {
+            updateMoodTimer -= 1.0f;
         }
+
+        int updateMoodMin = Mathf.FloorToInt(updateLastMoodTimer * MOOD_SWEEP_MAX);
+        int updateMoodMax = Mathf.FloorToInt(updateMoodTimer * MOOD_SWEEP_MAX);
 
         // Update loop
         updateShader.SetInt("frameCount", Time.frameCount);
         updateShader.SetFloat("deltaTime", Time.deltaTime);
         updateShader.SetInt("mouseX", Mathf.RoundToInt(Input.mousePosition.x));
         updateShader.SetInt("mouseY", Mathf.RoundToInt(Input.mousePosition.y));
-        updateShader.SetBool("updateMood", updateMood);
+        updateShader.SetInt("updateMoodMin", updateMoodMin);
+        updateShader.SetInt("updateMoodMax", updateMoodMax);
         updateShader.SetFloat("windowLeft", windowManager.ForegroundMin.x);
         updateShader.SetFloat("windowTop", windowManager.ForegroundMin.y);
         updateShader.SetFloat("windowRight", windowManager.ForegroundMax.x);

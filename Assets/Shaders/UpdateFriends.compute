@@ -12,7 +12,8 @@ float deltaTime;
 int mouseX;
 int mouseY;
 
-bool updateMood;
+int updateMoodMin;
+int updateMoodMax;
 
 float windowLeft;
 float windowTop;
@@ -249,8 +250,10 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
         }
     
         // Counts changes to mood once per second
-        // This bool is activated for one frame every second using a timer in FriendManager
-        if (updateMood)
+        // Min & max are a sweeping range that covers 0-MOOD_SWEEP_MAX every second
+        uint moodIdx = idx % MOOD_SWEEP_MAX;
+        if ((updateMoodMin <= updateMoodMax && (moodIdx >= updateMoodMin && moodIdx < updateMoodMax))
+            || (updateMoodMin > updateMoodMax && (moodIdx >= updateMoodMin || moodIdx < updateMoodMax)))
         {
             float mood = FRIEND_GET_MOOD(this) / 255.0;
         

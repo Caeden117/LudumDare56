@@ -14,6 +14,7 @@ struct Friend {
 };
 
 #define FRIENDS_PER_INVOCATION 64u
+#define MOOD_SWEEP_MAX 64u
 
 #define FRIEND_GET_STATE(this) (this.packed0 & 0xFu)
 #define FRIEND_GET_MOOD(this) ((this.packed0 >> 4) & 0xFFu)
