@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -76,7 +77,15 @@ public class FoodManager : MonoBehaviour {
     }
 
     public void OpenFoodFolder() {
-        System.Diagnostics.Process.Start("explorer.exe", foodFolder);
+        try {
+            System.Diagnostics.Process.Start("explorer.exe", foodFolder);
+        } catch (Win32Exception e) {
+            // "Win32Exception: Succes"
+            // i will kill you with a rock
+            if (e.ErrorCode != 0) {
+                throw;
+            }
+        }
     }
 
     private async UniTask LoadImage(string imageName) {
