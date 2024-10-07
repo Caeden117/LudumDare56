@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,8 +17,18 @@ public class PopupManager : MonoBehaviour
     [Space, SerializeField] private Popup popupPrefab;
     [SerializeField] private RectTransform popupParent;
 
+    private HashSet<int> existingPopups = new();
+
     private async UniTask Start()
     {
+        await RandomDelay(new Vector2(3f, 5f));
+
+        // Manually spawn a first popup
+        var popup = SpawnNewPopup();
+        await popup.FadeIn();
+        await RandomDelay(popupLifetimeRange);
+        await popup.FadeOut();
+
         while (true)
         {
             await LoopAsync();
@@ -26,8 +37,14 @@ public class PopupManager : MonoBehaviour
 
     public Popup SpawnNewPopup()
     {
+        var randomFriendIdx = 0;
+        do
+        {
+            randomFriendIdx = Random.Range(0, friendManager.RandomFriends.Length);
+        } while (!existingPopups.Add(randomFriendIdx));
+
         var newPopup = Instantiate(popupPrefab, popupParent);
-        newPopup.Initialize(friendManager, Random.Range(0, friendManager.RandomFriends.Length));
+        newPopup.Initialize(friendManager, randomFriendIdx);
         return newPopup;
     }
 
@@ -35,6 +52,7 @@ public class PopupManager : MonoBehaviour
     {
         await RandomDelay(delayRange);
 
+        existingPopups.Clear();
         friendManager.SelectNewRandomFriends();
 
         var numPopups = Mathf.Min(Random.Range(popupNumberRange.x, popupNumberRange.y), friendManager.FriendCount);
