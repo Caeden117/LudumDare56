@@ -43,6 +43,10 @@ public class FriendManager : MonoBehaviour {
     [SerializeField]
     public bool DebugDrawMood = false;
 
+    [SerializeField]
+    public float foodSaveInterval = 1f;
+    private float foodSaveTimer = 0f;
+
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct Friend {
         public Vector2 position;
@@ -451,6 +455,12 @@ public class FriendManager : MonoBehaviour {
 
         if (CoveredPixels[0] == 0) {
             foodManager.OnAte(foodItem).Forget();
+        } else {
+            // only save food image every now and again
+            foodSaveTimer += Time.deltaTime;
+            if (foodSaveTimer < foodSaveInterval) return;
+
+            foodManager.SaveImage(foodItem).Forget();
         }
     }
 }

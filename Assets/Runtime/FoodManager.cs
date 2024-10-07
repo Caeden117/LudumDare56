@@ -15,9 +15,10 @@ public class FoodManager : MonoBehaviour {
     [SerializeField]
     private GameObject foodPrefab;
 
-    private string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
+    private readonly string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
     private string foodFolder;
     private string eatenFolder;
+    private bool saving = false;
 
     public Dictionary<string, FoodItem> Food { get; private set; } = new Dictionary<string, FoodItem>();
 
@@ -95,5 +96,32 @@ public class FoodManager : MonoBehaviour {
 
         GameObject prefabInstance = Instantiate(foodPrefab, foodContainer);
         Food[imageName].SetPrefabInstance(prefabInstance);
+    }
+
+    public async UniTask SaveImage(FoodItem foodItem) {
+        if (saving) return;
+        saving = true;
+
+        try {
+            var format = foodItem.RT.graphicsFormat;
+            var req = await UnityEngine.Rendering.AsyncGPUReadback.Request(foodItem.RT, 0);
+            var buf = req.GetData<byte>().ToArray();
+            var width = (uint)req.width;
+            var height = (uint)req.height;
+            await UniTask.SwitchToThreadPool();
+
+            byte[] encoded;
+            if (foodItem.IsPNG) {
+                encoded = ImageConversion.EncodeArrayToPNG(buf, format, width, height);
+            } else {
+                encoded = ImageConversion.EncodeArrayToJPG(buf, format, width, height);
+            }
+
+            var path = Path.Combine(foodFolder, foodItem.Name);
+            await File.WriteAllBytesAsync(path, encoded);
+        } finally {
+            saving = false;
+            await UniTask.SwitchToMainThread();
+        }
     }
 }
