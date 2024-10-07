@@ -110,12 +110,7 @@ public class FoodManager : MonoBehaviour {
             var height = (uint)req.height;
             await UniTask.SwitchToThreadPool();
 
-            byte[] encoded;
-            if (foodItem.IsPNG) {
-                encoded = ImageConversion.EncodeArrayToPNG(buf, format, width, height);
-            } else {
-                encoded = ImageConversion.EncodeArrayToJPG(buf, format, width, height);
-            }
+            byte[] encoded = ImageConversion.EncodeArrayToPNG(buf, format, width, height);
 
             var path = Path.Combine(foodFolder, foodItem.Name);
             await File.WriteAllBytesAsync(path, encoded);
