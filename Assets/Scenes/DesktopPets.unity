@@ -7479,6 +7479,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: d88dad737fb5c504e9cbd087e76c9316, type: 3}
   - {fileID: 8300000, guid: 92706a13420c7ab40a81084655788665, type: 3}
   - {fileID: 8300000, guid: deb9df92d741f5942b1998d670592f42, type: 3}
+  - {fileID: 8300000, guid: 3525637659a03c1429a36455136ad946, type: 3}
   neutralAudioClips:
   - {fileID: 8300000, guid: 55f33165455f7234e8daeabcade683ec, type: 3}
   - {fileID: 8300000, guid: a17d119da4d085444b82a00eaa93780d, type: 3}
@@ -7566,6 +7567,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: bf99dde4bf771d043bc9d5b886a4de14, type: 3}
   - {fileID: 8300000, guid: 05a8603c46e0a6346bf11e8d93dd1004, type: 3}
   - {fileID: 8300000, guid: b4984469e4c3bac4ba2f655d7c7ccae9, type: 3}
+  - {fileID: 8300000, guid: 1f0d7280b1d9b614bbdd97388d73ce8f, type: 3}
+  - {fileID: 8300000, guid: e57e321cda8b0774683a809578c3e6de, type: 3}
+  - {fileID: 8300000, guid: a76b49a0df4e3064da3c7d0aa258ce5f, type: 3}
 --- !u!1 &1410531474
 GameObject:
   m_ObjectHideFlags: 0
@@ -8290,6 +8294,7 @@ MonoBehaviour:
   - '#96E3FF'
   - '#89CFF0'
   DebugDrawMood: 0
+  foodSaveInterval: 1
 --- !u!4 &1560855994
 Transform:
   m_ObjectHideFlags: 0
