@@ -39,7 +39,7 @@ public class AudioManager : MonoBehaviour
             positionCentered.y *= -1;
             var newPosition = 10 * positionCentered;
 
-            var mood = (int)randomFriend.mood;
+            var mood = randomFriend.mood - 127;
             var clipLibrary = mood switch
             {
                 >= 64 => happyClips,

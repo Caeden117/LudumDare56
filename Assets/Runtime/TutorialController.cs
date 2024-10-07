@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using LitMotion;
 using LitMotion.Extensions;
 using System;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,12 +26,14 @@ public class TutorialController : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
 
     private RectTransform rectTransform;
-
+    private Vector2 idleOffset;
     private int segmentIdx = 0;
 
     private async UniTask Start()
     {
         rectTransform = transform as RectTransform;
+
+        IdleBounce().Forget();
 
         LMotion.Create(0f, 1f, 1f)
             .WithEase(Ease.InOutSine)
@@ -84,6 +87,12 @@ public class TutorialController : MonoBehaviour
             .Forget();
     }
 
+    public async UniTask IdleBounce()
+        => await LMotion.Create(-2f, 2f, 1f / 2)
+            .WithEase(Ease.InOutSine)
+            .WithLoops(int.MaxValue, LoopType.Yoyo)
+            .Bind(it => idleOffset.y = it);
+
     private void LateUpdate()
     {
         var segment = segments[segmentIdx];
@@ -100,6 +109,8 @@ public class TutorialController : MonoBehaviour
         targetPosition = new Vector2(
             Mathf.Lerp(Screen.width / 2f, targetPosition.x, segment.TargetLerp.x),
             Mathf.Lerp(Screen.height / 2f, targetPosition.y, segment.TargetLerp.y));
+
+        targetPosition += idleOffset;
 
         rectTransform.anchoredPosition = Utils.TemporalLerp(rectTransform.anchoredPosition, targetPosition, 0.1f);
     }
