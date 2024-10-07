@@ -24,6 +24,8 @@ public class PopupManager : MonoBehaviour
         await RandomDelay(new Vector2(3f, 5f));
 
         // Manually spawn a first popup
+        existingPopups.Clear();
+        friendManager.SelectNewRandomFriends();
         var popup = SpawnNewPopup();
         await popup.FadeIn();
         await RandomDelay(popupLifetimeRange);
