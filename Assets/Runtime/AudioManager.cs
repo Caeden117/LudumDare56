@@ -7,6 +7,9 @@ public class AudioManager : MonoBehaviour
 {
     [SerializeField] private AudioSource audioSourcePrefab;
     [SerializeField] private FriendManager friendManager;
+    [SerializeField] private Vector2 meowDelayRange;
+    [SerializeField] private float meowTimeVariance;
+    [SerializeField] private float meowPitchVariance;
 
     [Space, SerializeField] private AudioClip[] happyClips;
     [SerializeField] private AudioClip[] neutralAudioClips;
@@ -14,9 +17,18 @@ public class AudioManager : MonoBehaviour
 
     private async UniTask Start()
     {
+        await UniTask.WaitUntil(() => friendManager.FriendCount > 0);
+
         while (true)
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(Random.Range(0.5f, 5f)));
+            // uncomment for constant delay
+            //var delay = Random.Range(0.5f, 5f);
+
+            // Mathematical function: 1 - (log(x)/7)^2
+            var delayNormalized = 1 - Mathf.Pow(Mathf.Log(friendManager.FriendCount, 10) / 7f, 2);
+            var delayRemapped = Utils.MapRange(delayNormalized, 0, 1, meowDelayRange.y, meowDelayRange.x);
+            var delayRandomized = Mathf.Max(delayRemapped + Random.Range(-meowTimeVariance, meowTimeVariance), meowDelayRange.y);
+            await UniTask.Delay(TimeSpan.FromSeconds(delayRandomized));
 
             var randomFriendIdx = Random.Range(0, friendManager.RandomFriends.Length);
             var randomFriend = friendManager.RandomFriends[randomFriendIdx];
@@ -37,7 +49,8 @@ public class AudioManager : MonoBehaviour
 
             var newAudioSource = Instantiate(audioSourcePrefab, transform.parent);
             newAudioSource.clip = clipLibrary[Random.Range(0, clipLibrary.Length)];
-            newAudioSource.transform.localPosition = new Vector3(newPosition.x, newPosition.y, 0);
+            newAudioSource.transform.localPosition = (Vector3)newPosition;
+            newAudioSource.pitch = 1 + Random.Range(-meowPitchVariance, meowPitchVariance);
             newAudioSource.Play();
 
             await UniTask.WaitWhile(() => newAudioSource.isPlaying);
