@@ -412,10 +412,10 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     moodChange = -0.02;
                     break;
                 case FRIEND_STATE_WINDOW_RIDING:
-                    moodChange = 0.11;
+                    moodChange = 0.14;
                     break;
                 case FRIEND_STATE_HUNGRY:
-                    moodChange = -0.02;
+                    moodChange = -0.01;
                     break;
                 case FRIEND_STATE_CURSOR_SEEKING:
                     moodChange = 0.04;
@@ -424,10 +424,10 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
         
             if (floatDist(this.position.x, mouseX) <= 100.0 && floatDist(this.position.y, mouseY) <= 100.0)
             {
-                moodChange += 0.09;
+                moodChange += 0.14;
             }
         
-            mood = clamp(mood + RandomValue(rngState) * moodChange, 0.0, 1.0);
+            mood = clamp(mood + (RandomValue(rngState) * 0.75 + 0.25) * moodChange, 0.0, 1.0);
         
             FRIEND_SET_MOOD(this, (uint) floor(mood * 255.0));
         }
@@ -479,7 +479,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
             if (ate)
             {
                 float mood = FRIEND_GET_MOOD(this) / 255.0;
-                mood = clamp(mood + RandomValue(rngState) * 0.2 + 0.2, 0.0, 1.0);
+                mood = clamp(mood + RandomValue(rngState) * 0.2 + 0.3, 0.0, 1.0);
                 FRIEND_SET_MOOD(this, (uint) floor(mood * 255.0));
                 SwitchStateWandering(this, rngState);
             }

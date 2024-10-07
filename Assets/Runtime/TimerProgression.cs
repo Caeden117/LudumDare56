@@ -27,7 +27,7 @@ public class TimerProgression : MonoBehaviour {
     private bool cooldown = false;
 
     private decimal[] costSteps = {
-        10m, 50m, 250m,
+        100m, 200m, 500m,
         1000m, 2000m, 5000m,
         10000m, 20000m, 50000m,
         100000m, 200000m, 500000m,
