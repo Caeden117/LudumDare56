@@ -9,7 +9,7 @@ public class TimerProgression : MonoBehaviour {
     private float minimumUnlockDuration = 5.0f;
 
     [SerializeField]
-    private bool debugFreeUpgrade;
+    public bool DebugFreeUpgrade;
 
     private RectTransform rectTransform;
     [SerializeField] private FriendManager friendManager;
@@ -46,7 +46,7 @@ public class TimerProgression : MonoBehaviour {
 
     private void Update() {
         button.interactable = !cooldown
-            && (debugFreeUpgrade || goldManager.Gold >= costSteps[friendManager.FriendCountStep])
+            && (DebugFreeUpgrade || goldManager.Gold >= costSteps[friendManager.FriendCountStep])
             && friendManager.FriendCountStep < costSteps.Length - 1;
     }
 
@@ -74,7 +74,7 @@ public class TimerProgression : MonoBehaviour {
             progressionImage.fillAmount = Utils.TemporalLerp(progressionImage.fillAmount, currentFill, 0.1f);
             
             await UniTask.Yield();
-        } while (currentFill < 1 && !debugFreeUpgrade);
+        } while (currentFill < 1 && !DebugFreeUpgrade);
 
         progressionImage.fillAmount = 1f;
 
@@ -96,7 +96,7 @@ public class TimerProgression : MonoBehaviour {
 
     public void OnButtonPress() {
         ButtonPressAsync().Forget();
-        if (!debugFreeUpgrade) {
+        if (!DebugFreeUpgrade) {
             goldManager.Gold -= costSteps[friendManager.FriendCountStep];
         }
         float duration = friendManager.AddNewFriends();

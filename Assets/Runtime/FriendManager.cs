@@ -41,7 +41,7 @@ public class FriendManager : MonoBehaviour {
     private List<string> customColorPalette = new List<string>();
 
     [SerializeField]
-    private bool debugDrawMood = false;
+    public bool DebugDrawMood = false;
 
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct Friend {
@@ -261,7 +261,7 @@ public class FriendManager : MonoBehaviour {
         renderShader.SetInt("screenHeight", Screen.height);
         renderShader.SetInt("frameCount", 0);
         renderShader.SetBool("tiny", Tiny);
-        renderShader.SetBool("debugDrawMood", debugDrawMood);
+        renderShader.SetBool("debugDrawMood", DebugDrawMood);
         renderShader.SetInt("friendCount", FriendCount);
         renderShader.SetBuffer(renderFriendsKernel, "friendData", friendDataBuffer);
         renderShader.SetBuffer(renderFriendsKernel, "colorPalette", colorPaletteBuffer);
@@ -412,7 +412,7 @@ public class FriendManager : MonoBehaviour {
         RenderTexture.active = oldRT;
         renderShader.SetInt("frameCount", Time.frameCount);
         renderShader.SetBool("tiny", Tiny);
-        renderShader.SetBool("debugDrawMood", debugDrawMood);
+        renderShader.SetBool("debugDrawMood", DebugDrawMood);
         renderShader.SetInt("friendCount", FriendCount);
         renderDispatchSize = Mathf.CeilToInt((float) FriendCount / renderThreadGroupSize / FRIENDS_PER_INVOCATION);
         renderShader.Dispatch(renderFriendsKernel, renderDispatchSize, 1, 1);
