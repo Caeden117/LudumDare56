@@ -112,6 +112,7 @@ MonoBehaviour:
   - {fileID: -510046716, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -745666361, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -265902768, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: -1083983700, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   slightlyUnhappyColor: {r: 0.8113208, g: 0.7921814, b: 0.3099858, a: 0.8}
   unhappySprites:
   - {fileID: 293913417, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
