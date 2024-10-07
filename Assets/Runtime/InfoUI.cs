@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 
 public class InfoUI : MonoBehaviour {
+    private CanvasGroup canvasGroup;
     [SerializeField]
     private FriendManager friendManager;
     [SerializeField]
@@ -17,6 +18,8 @@ public class InfoUI : MonoBehaviour {
     private List<TMP_Text> moodValueLabels;
 
     private void Start() {
+        canvasGroup = GetComponent<CanvasGroup>();
+
         for (int i = 0; i < moodValueLabels.Count; i++) {
             if (i >= goldManager.moodGoldValues.Count) {
                 break;
@@ -27,13 +30,20 @@ public class InfoUI : MonoBehaviour {
     }
 
     private void Update() {
+        if (canvasGroup.alpha <= 0.0f) {
+            return;
+        }
+
         if (friendManager.FriendCount == 1) {
             friendCountText.text = "1 FRIEND!";
         } else {
-            friendCountText.text = friendManager.FriendCount.ToString("N0") + " FRIENDS!";
+            friendCountText.text = $"{friendManager.FriendCount:N0} FRIENDS!";
         }
 
-        int mostPopularMood = friendManager.MoodStats.Max();
+        int mostPopularMood = 0;
+        for (int i = 0; i < friendManager.MoodStats.Length; i++) {
+            mostPopularMood = Mathf.Max(mostPopularMood, friendManager.MoodStats[i]);
+        }
 
         if (mostPopularMood > 0) {
             for (int i = 0; i < moodBars.Count; i++) {

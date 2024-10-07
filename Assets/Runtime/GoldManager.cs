@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Cysharp.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +39,12 @@ public class GoldManager : MonoBehaviour {
     public string FormatGold(decimal gold) {
         decimal whole = Math.Floor(gold);
 
+        string wholeStr = whole.ToString();
+
+        if (wholeStr.Length < 4) {
+            return wholeStr;
+        }
+
         // No Math.Log10 for decimal types, this'll do for our purposes
         int log10 = 0;
         decimal temp = whole;
@@ -63,14 +69,20 @@ public class GoldManager : MonoBehaviour {
             _ => "?"
         };
 
-        string str = whole.ToString();
-        if (str.Length < 4) {
-            return str;
-        }
-
-        str = str.Substring(0, 4);
         int decimalPos = 1 + log10 % 3;
+        using (var sb = ZString.CreateStringBuilder(true)) {
+            for (int i = 0; i < 5; i++) {
+                if (i == decimalPos) {
+                    sb.Append(".");
+                } else if (i > decimalPos) {
+                    sb.Append(wholeStr[i - 1]);
+                } else {
+                    sb.Append(wholeStr[i]);
+                }
+            }
+            sb.Append(suffix);
 
-        return str.Substring(0, decimalPos) + "." + str.Substring(decimalPos, str.Length - decimalPos) + suffix;
+            return sb.ToString();
+        }
     }
 }
