@@ -7445,7 +7445,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSourcePrefab: {fileID: 5546169835404727050, guid: b33311ad854e70f409b206c0b4aed0c7, type: 3}
   friendManager: {fileID: 1560855993}
-  meowDelayRange: {x: 3, y: 0.25}
+  meowDelayRange: {x: 3, y: 0.1}
   meowTimeVariance: 0.5
   meowPitchVariance: 0.2
   happyClips:

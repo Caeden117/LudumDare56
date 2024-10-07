@@ -24,10 +24,10 @@ public class AudioManager : MonoBehaviour
             // uncomment for constant delay
             //var delay = Random.Range(0.5f, 5f);
 
-            // Mathematical function: 1 - (log(x)/7)^2
-            var delayNormalized = 1 - Mathf.Pow(Mathf.Log(friendManager.FriendCount, 10) / 7f, 2);
+            // Mathematical function: 1 - (log(x) / 7)
+            var delayNormalized = 1 - (Mathf.Log(friendManager.FriendCount, 10) / 7f);
             var delayRemapped = Utils.MapRange(delayNormalized, 0, 1, meowDelayRange.y, meowDelayRange.x);
-            var delayRandomized = Mathf.Max(delayRemapped + Random.Range(-meowTimeVariance, meowTimeVariance), meowDelayRange.y);
+            var delayRandomized = Mathf.Max(delayRemapped + (Random.Range(-meowTimeVariance, meowTimeVariance) * delayRemapped), meowDelayRange.y);
             await UniTask.Delay(TimeSpan.FromSeconds(delayRandomized));
 
             var randomFriendIdx = Random.Range(0, friendManager.RandomFriends.Length);
@@ -53,9 +53,14 @@ public class AudioManager : MonoBehaviour
             newAudioSource.pitch = 1 + Random.Range(-meowPitchVariance, meowPitchVariance);
             newAudioSource.Play();
 
-            await UniTask.WaitWhile(() => newAudioSource.isPlaying);
-
-            Destroy(newAudioSource.gameObject);
+            WaitThenDestroy(newAudioSource).Forget();
         }
+    }
+
+    private async UniTask WaitThenDestroy(AudioSource source)
+    {
+        await UniTask.WaitWhile(() => source.isPlaying);
+
+        Destroy(source.gameObject);
     }
 }
