@@ -14,6 +14,7 @@ public class TimerProgression : MonoBehaviour {
     private RectTransform rectTransform;
     [SerializeField] private FriendManager friendManager;
     [SerializeField] private GoldManager goldManager;
+    [SerializeField] private NextProgressionUI nextProgression;
     [SerializeField] private Sprite maxSprite;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private Image progressionImage;
@@ -21,6 +22,8 @@ public class TimerProgression : MonoBehaviour {
     [SerializeField] private Button button;
     [SerializeField] private Image buttonImage;
 
+    private float buttonPressedTime;
+    private float duration;
     private bool cooldown = false;
 
     private decimal[] costSteps = {
@@ -38,18 +41,18 @@ public class TimerProgression : MonoBehaviour {
         rectTransform = GetComponent<RectTransform>();
         canvasGroup.alpha = 0.0f;
         TimerAsync(minimumUnlockDuration).Forget();
+        nextProgression.UpdateCost(costSteps[friendManager.FriendCountStep]);
     }
 
     private void Update() {
         button.interactable = !cooldown
             && (debugFreeUpgrade || goldManager.Gold >= costSteps[friendManager.FriendCountStep])
             && friendManager.FriendCountStep < costSteps.Length - 1;
-
-        var currentFill = (float)(goldManager.Gold / costSteps[friendManager.FriendCountStep]);
-        progressionImage.fillAmount = Utils.TemporalLerp(progressionImage.fillAmount, currentFill, 0.1f);
     }
 
     private async UniTask TimerAsync(float duration) {
+        buttonPressedTime = Time.time;
+        this.duration = duration;
         cooldown = true;
 
         // Animate a reset (0 progress, faded)
@@ -62,10 +65,18 @@ public class TimerProgression : MonoBehaviour {
 
         // Wait until conditions are met
         //await LMotion.Create(0f, 1f, duration).Bind(it => progressionImage.fillAmount = it);
-        while (goldManager.Gold < costSteps[friendManager.FriendCountStep] && !debugFreeUpgrade)
+        var currentFill = 0f;
+        do
         {
+            currentFill = Mathf.Min((float)(goldManager.Gold / costSteps[friendManager.FriendCountStep]),
+                (Time.time - buttonPressedTime) / duration);
+
+            progressionImage.fillAmount = Utils.TemporalLerp(progressionImage.fillAmount, currentFill, 0.1f);
+            
             await UniTask.Yield();
-        }
+        } while (currentFill < 1 && !debugFreeUpgrade);
+
+        progressionImage.fillAmount = 1f;
 
         // Speen
         LMotion.Create(0f, 360f, 1.5f)
@@ -79,6 +90,7 @@ public class TimerProgression : MonoBehaviour {
             .ToUniTask()
             .Forget();
 
+        nextProgression.Hide();
         cooldown = false;
     }
 
@@ -90,6 +102,8 @@ public class TimerProgression : MonoBehaviour {
         float duration = friendManager.AddNewFriends();
         if (duration > 0.0f) {
             TimerAsync(Mathf.Max(minimumUnlockDuration, duration)).Forget();
+            nextProgression.UpdateCost(costSteps[friendManager.FriendCountStep]);
+            nextProgression.Show();
         }
         else {
             buttonImage.sprite = maxSprite;
