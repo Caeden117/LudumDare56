@@ -72,6 +72,7 @@ public class FoodManager : MonoBehaviour {
 
     public async UniTask OnAte(FoodItem foodItem) {
         foodItem.OnAte();
+        await UniTask.WaitUntil(() => !saving);
         File.Delete(Path.Combine(foodFolder, foodItem.Name));
         await UniTask.NextFrame();
         Food.Remove(foodItem.Name);
@@ -113,7 +114,10 @@ public class FoodManager : MonoBehaviour {
             byte[] encoded = ImageConversion.EncodeArrayToPNG(buf, format, width, height);
 
             var path = Path.Combine(foodFolder, foodItem.Name);
-            await File.WriteAllBytesAsync(path, encoded);
+
+            if (foodItem.Ready) {
+                await File.WriteAllBytesAsync(path, encoded);
+            }
         } finally {
             saving = false;
             await UniTask.SwitchToMainThread();
