@@ -87,6 +87,8 @@ MonoBehaviour:
   - {fileID: 1752759351, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -1395599479, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -1538643788, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 1623319032, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 951437980, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   happyColor: {r: 0.3981294, g: 0.78699994, b: 0.7499646, a: 0.8}
   slightlyHappySprites:
   - {fileID: -740307172, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
@@ -99,6 +101,10 @@ MonoBehaviour:
   - {fileID: 1087570739, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: 386608361, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -1922678983, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: -2043478944, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 2115431698, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 1852447234, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: -209243750, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   slightlyHappyColor: {r: 0.47573507, g: 0.7735849, b: 0.41963333, a: 0.8}
   slightlyUnhappySprites:
   - {fileID: 1619196695, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
@@ -113,6 +119,9 @@ MonoBehaviour:
   - {fileID: -745666361, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -265902768, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: -1083983700, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 878785856, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: -334558275, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: 1884927720, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   slightlyUnhappyColor: {r: 0.8113208, g: 0.7921814, b: 0.3099858, a: 0.8}
   unhappySprites:
   - {fileID: 293913417, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
@@ -131,6 +140,7 @@ MonoBehaviour:
   - {fileID: -795964682, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: 1507971904, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   - {fileID: 913279365, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
+  - {fileID: -269006907, guid: a0a15cb7f3fd13d4fa94ae3cff72adee, type: 3}
   unhappyColor: {r: 0.764151, g: 0.34963512, b: 0.34963512, a: 0.8}
 --- !u!1 &1350481933055432489
 GameObject:
