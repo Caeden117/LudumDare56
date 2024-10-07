@@ -33,6 +33,8 @@ public class FriendManager : MonoBehaviour
 
     [SerializeField]
     private WindowManager windowManager = null;
+    [SerializeField]
+    private FoodManager foodManager = null;
 
     [SerializeField]
     private List<string> customColorPalette = new List<string>();
