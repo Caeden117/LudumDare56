@@ -15,6 +15,7 @@ public class TutorialController : MonoBehaviour
         public float Delay;
         public int TargetID;
         public Vector2 TargetLerp;
+        public Button ButtonToPress;
     }
 
     [SerializeField] private TutorialSegment[] segments;
@@ -56,6 +57,10 @@ public class TutorialController : MonoBehaviour
             await LMotion.Create(0f, 1f, 1f)
                 .WithEase(Ease.OutSine)
                 .Bind(t => tutorialText.color = new Color(0, 0, 0, t));
+
+            if (segment.ButtonToPress != null) {
+                segment.ButtonToPress.onClick.Invoke();
+            }
 
             await UniTask.Delay(TimeSpan.FromSeconds(segment.Delay));
 

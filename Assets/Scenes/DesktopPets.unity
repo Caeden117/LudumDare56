@@ -3049,43 +3049,53 @@ MonoBehaviour:
     Delay: 5
     TargetID: 0
     TargetLerp: {x: 0.75, y: 0.75}
+    ButtonToPress: {fileID: 0}
   - Text: they love you!
     Delay: 5
     TargetID: 0
     TargetLerp: {x: 0.75, y: 0.75}
+    ButtonToPress: {fileID: 0}
   - Text: they get <color=#79C56B>happy</color>\naround your cursor!
     Delay: 5
     TargetID: 0
     TargetLerp: {x: 0.75, y: 0.75}
+    ButtonToPress: {fileID: 0}
   - Text: ...or jumping on\nyour windows!
     Delay: 5
     TargetID: 0
     TargetLerp: {x: 0.75, y: 0.75}
+    ButtonToPress: {fileID: 0}
   - Text: but friends get <color=#C35959>unhappy</color>\nwhen left alone...
     Delay: 5
     TargetID: 0
     TargetLerp: {x: 0.75, y: 0.75}
+    ButtonToPress: {fileID: 0}
   - Text: you can watch\ntheir moods here!
     Delay: 5
     TargetID: 4
-    TargetLerp: {x: 0.6, y: 1}
+    TargetLerp: {x: 0.5, y: 1}
+    ButtonToPress: {fileID: 1780269320}
   - Text: the <color=#79C56B>happier</color> your friends are\nthe more <sprite=0
       tint=1> you earn!
     Delay: 5
     TargetID: 1
     TargetLerp: {x: 0.6, y: 1}
+    ButtonToPress: {fileID: 0}
   - Text: you can use <sprite=0 tint=1>\nto get more friends!
     Delay: 5
     TargetID: 2
     TargetLerp: {x: 0.6, y: 1}
+    ButtonToPress: {fileID: 0}
   - Text: friends love eating\nimages you feed them!
     Delay: 5
     TargetID: 3
     TargetLerp: {x: 0.6, y: 1}
+    ButtonToPress: {fileID: 311870310}
   - Text: i think they're\nadorable :)
     Delay: 5
     TargetID: 0
     TargetLerp: {x: 0.75, y: 0.75}
+    ButtonToPress: {fileID: 0}
   friendManager: {fileID: 1560855993}
   targets:
   - {fileID: 1824168787}
