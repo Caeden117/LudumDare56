@@ -44,21 +44,30 @@ public class TimerProgression : MonoBehaviour {
         button.interactable = !cooldown
             && (debugFreeUpgrade || goldManager.Gold >= costSteps[friendManager.FriendCountStep])
             && friendManager.FriendCountStep < costSteps.Length - 1;
+
+        var currentFill = (float)(goldManager.Gold / costSteps[friendManager.FriendCountStep]);
+        progressionImage.fillAmount = Utils.TemporalLerp(progressionImage.fillAmount, currentFill, 0.1f);
     }
 
     private async UniTask TimerAsync(float duration) {
         cooldown = true;
 
+        // Animate a reset (0 progress, faded)
         LMotion.Create(1f, 0f, 0.5f)
             .WithEase(Ease.OutQuad)
             .Bind(it => progressionImage.fillAmount = it)
             .ToUniTask()
             .Forget();
-
         await LMotion.Create(canvasGroup.alpha, 0.5f, 1f).BindToCanvasGroupAlpha(canvasGroup);
 
-        await LMotion.Create(0f, 1f, duration).Bind(it => progressionImage.fillAmount = it);
+        // Wait until conditions are met
+        //await LMotion.Create(0f, 1f, duration).Bind(it => progressionImage.fillAmount = it);
+        while (goldManager.Gold < costSteps[friendManager.FriendCountStep] && !debugFreeUpgrade)
+        {
+            await UniTask.Yield();
+        }
 
+        // Speen
         LMotion.Create(0f, 360f, 1.5f)
             .WithEase(Ease.OutCirc)
             .Bind(it => buttonRect.eulerAngles = it * Vector3.forward)
