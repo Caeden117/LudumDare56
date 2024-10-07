@@ -5015,7 +5015,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   friendManager: {fileID: 1560855993}
   delayRange: {x: 25, y: 45}
-  popupNumberRange: {x: 15, y: 30}
+  popupNumberRange: {x: 15, y: 64}
   popupSpawnRange: {x: 0, y: 25}
   popupLifetimeRange: {x: 10, y: 15}
   popupPrefab: {fileID: -7294578602140444315, guid: 150ebac5adbe7a74a9efc61e3b7230e7, type: 3}
