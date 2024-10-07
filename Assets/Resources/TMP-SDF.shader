@@ -147,11 +147,13 @@ SubShader {
 			float4	param			: TEXCOORD1;		// alphaClip, scale, bias, weight
 			float4	mask			: TEXCOORD2;		// Position in object space(xy), pixel Size(zw)
 			float3	viewDir			: TEXCOORD3;
-			float3  screenPosition  : TEXCOORD4;
 
 		    #if (UNDERLAY_ON || UNDERLAY_INNER)
 			float4	texcoord2		: TEXCOORD4;		// u,v, scale, bias
 			fixed4	underlayColor	: COLOR1;
+			float3  screenPosition  : TEXCOORD5;
+			#else
+			float3  screenPosition  : TEXCOORD4;
 		    #endif
 
 		    float4 textures			: TEXCOORD5;
