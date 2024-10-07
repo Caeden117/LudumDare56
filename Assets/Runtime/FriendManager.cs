@@ -220,8 +220,8 @@ public class FriendManager : MonoBehaviour
         updateShader.SetInt("screenHeight", Screen.height);
         updateShader.SetInt("frameCount", 0);
         updateShader.SetFloat("deltaTime", 0.0f);
-        updateShader.SetInt("mouseX", Mathf.RoundToInt(Input.mousePosition.x));
-        updateShader.SetInt("mouseY", Mathf.RoundToInt(Input.mousePosition.y));
+        updateShader.SetFloat("mouseX", Input.mousePosition.x);
+        updateShader.SetFloat("mouseY", Screen.height - Input.mousePosition.y);
         updateShader.SetFloat("windowLeft", 0.0f);
         updateShader.SetFloat("windowTop", 0.0f);
         updateShader.SetFloat("windowRight", 0.0f);
@@ -335,8 +335,8 @@ public class FriendManager : MonoBehaviour
         // Update loop
         updateShader.SetInt("frameCount", Time.frameCount);
         updateShader.SetFloat("deltaTime", Time.deltaTime);
-        updateShader.SetInt("mouseX", Mathf.RoundToInt(Input.mousePosition.x));
-        updateShader.SetInt("mouseY", Mathf.RoundToInt(Input.mousePosition.y));
+        updateShader.SetFloat("mouseX", Input.mousePosition.x);
+        updateShader.SetFloat("mouseY", Screen.height - Input.mousePosition.y);
         updateShader.SetInt("updateMoodMin", updateMoodMin);
         updateShader.SetInt("updateMoodMax", updateMoodMax);
         updateShader.SetFloat("windowLeft", windowManager.ForegroundMin.x);

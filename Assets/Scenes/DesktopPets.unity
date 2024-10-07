@@ -224,7 +224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   friendManager: {fileID: 1560855993}
   goldCooldown: 1
-  moodGoldValues: 0000000000000000010000000000000001000000000000000100000000000000020000000000000002000000000000000300000000000000040000000000000005000000000000000a00000000000000
+  moodGoldValues: 010000000000000001000000000000000100000000000000020000000000000002000000000000000300000000000000040000000000000005000000000000000a000000000000000f00000000000000
 --- !u!4 &13690896
 Transform:
   m_ObjectHideFlags: 0
@@ -2524,6 +2524,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minimumUnlockDuration: 5
+  debugFreeUpgrade: 0
   friendManager: {fileID: 1560855993}
   goldManager: {fileID: 13690895}
   maxSprite: {fileID: 3643105169464052631, guid: 936d285275ffaa44bbb707134d56eaf3, type: 3}
@@ -4801,7 +4802,7 @@ MonoBehaviour:
   - '#F56B1F'
   - '#96E3FF'
   - '#89CFF0'
-  debugDrawMood: 0
+  debugDrawMood: 1
 --- !u!4 &1560855994
 Transform:
   m_ObjectHideFlags: 0

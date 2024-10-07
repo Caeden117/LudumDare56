@@ -9,8 +9,8 @@ int screenHeight;
 
 int frameCount;
 float deltaTime;
-int mouseX;
-int mouseY;
+float mouseX;
+float mouseY;
 
 int updateMoodMin;
 int updateMoodMax;
@@ -277,7 +277,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
         
             if (floatDist(this.position.x, mouseX) <= 100.0 && floatDist(this.position.y, mouseY) <= 100.0)
             {
-                moodChange += 0.12;
+                moodChange += 0.07;
             }
         
             mood = clamp(mood + RandomValue(rngState) * moodChange, 0.0, 1.0);
