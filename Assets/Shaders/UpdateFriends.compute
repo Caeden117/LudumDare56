@@ -168,6 +168,15 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     this.velocity.x += 300.0 * (RandomValue(rngState) * 2.0 - 1.0);
                     this.velocity.y += -600.0 * RandomValue(rngState);
                     WANDERING_JUMP_TIMER(this) += 2.5 + 5.0 * RandomValue(rngState);
+                
+                    if (friendCount <= 5)
+                    {
+                        if (this.position.x <= screenWidth * 0.2 && this.velocity.x < 0.0
+                            || this.position.x >= screenWidth * 0.8 && this.velocity.x > 0.0)
+                        {
+                            this.velocity.x = -this.velocity.x;
+                        }
+                    }
                     
                     float mood = FRIEND_GET_MOOD(this) / 255.0;
                     float val = RandomValue(rngState);
