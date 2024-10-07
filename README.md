@@ -10,6 +10,7 @@ A falling-sand-desktop-pet-idle-game-hybrid powered by compute shaders :)
 
 - **Caeden117** - Programming, UI, Art
 - **PlusOneRabbit** - Programming, UI, Art
+- **lulu.dev** - Programming
 
 Thank you to our cat friends for lending their voices:
 
