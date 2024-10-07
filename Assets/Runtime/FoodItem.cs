@@ -11,8 +11,6 @@ public class FoodItem
     public GameObject PrefabInstance { get; private set; } = null;
     public RawImage RawImage { get; private set; } = null;
 
-    public bool IsPNG { get => Name.EndsWith(".png"); }
-
     public FoodItem(string name) {
         Name = name;
     }
