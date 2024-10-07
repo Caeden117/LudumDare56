@@ -866,6 +866,41 @@ MonoBehaviour:
   - {fileID: 580942966}
   - {fileID: 872715374}
   - {fileID: 1185030958}
+--- !u!1 &230199151
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 230199152}
+  m_Layer: 5
+  m_Name: FoodContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &230199152
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230199151}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 677696291}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &280057052
 GameObject:
   m_ObjectHideFlags: 0
@@ -2241,6 +2276,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 944727439}
+  - {fileID: 230199152}
   - {fileID: 1410531475}
   - {fileID: 1039343648}
   m_Father: {fileID: 0}
@@ -3974,7 +4010,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transparencyManager: {fileID: 1979284823}
-  canvas: {fileID: 677696290}
+  foodContainer: {fileID: 230199152}
   foodPrefab: {fileID: 4862121414606139433, guid: b85d9dcb383af704e9e8a98284a634ba, type: 3}
 --- !u!4 &1113368323
 Transform:
@@ -4962,7 +4998,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -5220,6 +5256,7 @@ MonoBehaviour:
   renderShader: {fileID: 7200000, guid: db9cf2586f740bc48bbb2e9479af3289, type: 3}
   copyShader: {fileID: 7200000, guid: ef07bfb979ff7e14793dbc11e7f52f41, type: 3}
   aggregateShader: {fileID: 7200000, guid: 253029d85500f9e458e0e969e78ab74f, type: 3}
+  imageCoverageShader: {fileID: 7200000, guid: cb7194d97c016604eaf1a6202607ba2f, type: 3}
   output: {fileID: 1410531476}
   windowManager: {fileID: 638967636}
   foodManager: {fileID: 1113368322}

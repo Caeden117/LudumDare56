@@ -1,0 +1,34 @@
+#pragma kernel ImageCoverage
+
+#define PIXELS_PER_INVOCATION 64u
+
+int foodWidth;
+int foodHeight;
+RWTexture2D<float4> foodTexture;
+RWStructuredBuffer<int> coveredPixels;
+
+[numthreads(64, 1, 1)]
+void ImageCoverage(uint3 id : SV_DispatchThreadID)
+{
+    int _coveredPixels = 0;
+    
+    for (uint pixelOffset = 0; pixelOffset < PIXELS_PER_INVOCATION; pixelOffset++)
+    {
+        uint idx = id.x * PIXELS_PER_INVOCATION + pixelOffset;
+        
+        int x = idx % foodWidth;
+        int y = idx / foodWidth;
+        
+        if (x >= foodWidth || y >= foodHeight)
+        {
+            break;
+        }
+    
+        if (foodTexture[int2(x, y)].a > 0.0)
+        {
+            ++_coveredPixels;
+        }
+    }
+    
+    InterlockedAdd(coveredPixels[0], _coveredPixels);
+}

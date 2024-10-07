@@ -5,10 +5,10 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static UnityEngine.UI.GridLayoutGroup;
 using Random = UnityEngine.Random;
 
-public class FriendManager : MonoBehaviour
-{
+public class FriendManager : MonoBehaviour {
     public Friend[] RandomFriends = new Friend[RANDOM_FRIEND_MAX];
     public int FriendCount { get; private set; } = 0;
 
@@ -27,6 +27,8 @@ public class FriendManager : MonoBehaviour
     private ComputeShader copyShader = null;
     [SerializeField]
     private ComputeShader aggregateShader = null;
+    [SerializeField]
+    private ComputeShader imageCoverageShader = null;
 
     [SerializeField]
     private RawImage output = null;
@@ -99,18 +101,22 @@ public class FriendManager : MonoBehaviour
     private ComputeBuffer copyFriendIdxBuffer;
     private ComputeBuffer copyFriendBuffer;
     private ComputeBuffer moodStatsBuffer;
+    private ComputeBuffer coveredPixelsBuffer;
     private int updateFriendsKernel;
     private int renderFriendsKernel;
     private int copyFriendsKernel;
     private int aggregateFriendsKernel;
+    private int imageCoverageKernel;
     private uint updateThreadGroupSize;
     private uint renderThreadGroupSize;
     private uint copyThreadGroupSize;
     private uint aggregateThreadGroupSize;
+    private uint imageCoverageThreadGroupSize;
     private int updateDispatchSize;
     private int renderDispatchSize;
     private int copyDispatchSize;
     private int aggregateDispatchSize;
+    private int imageCoverageDispatchSize;
 
     private const int FRIEND_STRIDE = 8 * sizeof(float) + 1 * sizeof(int);
     private const int FRIEND_MAX = 10000000; // * FRIEND_STRIDE = 360MB VRAM
@@ -119,9 +125,13 @@ public class FriendManager : MonoBehaviour
     private const int COLOR_PALETTE_STRIDE = sizeof(float) * 3;
     private const int COLOR_PALETTE_MAX = 1 << 8;
     private const int MOOD_STATS_MAX = 10;
+    private const int PIXELS_PER_INVOCATION = 64;
 
     public int[] MoodStats { get; private set; } = new int[MOOD_STATS_MAX];
     private int[] moodStatsDefault = new int[MOOD_STATS_MAX];
+
+    public int[] CoveredPixels { get; private set; } = new int[1];
+    private int[] coveredPixelsDefault = new int[1];
 
     private int[] randomFriendIdx = new int[RANDOM_FRIEND_MAX];
     private float updateMoodTimer = 0.0f;
@@ -135,7 +145,7 @@ public class FriendManager : MonoBehaviour
 
         initialized = true;
 
-        renderTexture = new RenderTexture(Screen.width, Screen.height, 32, RenderTextureFormat.ARGB32);
+        renderTexture = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
         renderTexture.enableRandomWrite = true;
         renderTexture.Create();
         output.texture = renderTexture;
@@ -154,7 +164,8 @@ public class FriendManager : MonoBehaviour
                 position.y = Screen.height * 0.5f;
                 velocity.x = speed * Mathf.Cos(angle);
                 velocity.y = speed * Mathf.Sin(angle);
-            } else {
+            }
+            else {
                 if (i < 5500000 || ((i % 3) != 1)) {
                     float curtainEdge = Random.value >= 0.5f ? Screen.width : 0.0f;
                     float curtainSweep = Utils.MapRange(Mathf.Sqrt(Utils.MapRange(i, 5000000, 5500000, 0.0f, 1.0f)), 0.0f, 1.0f, 0.05f, 0.6f);
@@ -162,7 +173,8 @@ public class FriendManager : MonoBehaviour
                     position.y = Random.Range(-10.0f, 0.0f);
                     velocity.x = Random.Range(-10.0f, 10.0f);
                     velocity.y = Random.Range(-20.0f, 0.0f);
-                } else {
+                }
+                else {
                     bool side = Random.value >= 0.5f;
                     float cannonEdge = side ? Screen.width : 0.0f;
                     position.x = cannonEdge + Random.Range(-20.0f, 20.0f);
@@ -183,7 +195,7 @@ public class FriendManager : MonoBehaviour
                 fvar3 = 0.0f,
 
                 state = 0,
-                mood = (byte)Random.Range(127 - 40, 127 + 80), // starting mood: -40 to 80
+                mood = (byte) Random.Range(127 - 40, 127 + 80), // starting mood: -40 to 80
                 colorIdx = (byte) Random.Range(0, COLOR_PALETTE_MAX)
             };
         }
@@ -197,10 +209,12 @@ public class FriendManager : MonoBehaviour
                 Color color;
                 if (ColorUtility.TryParseHtmlString(customColorPalette[i], out color)) {
                     colorPalette[i] = new Vector3(color.r, color.g, color.b);
-                } else {
+                }
+                else {
                     Debug.LogError("Failed to parse custom color palette color #" + i + ": " + customColorPalette[i]);
                 }
-            } else {
+            }
+            else {
                 colorPalette[i] = new Vector3(Random.Range(0.6f, 1.0f), Random.Range(0.6f, 1.0f), Random.Range(0.6f, 1.0f));
             }
         }
@@ -214,10 +228,14 @@ public class FriendManager : MonoBehaviour
         moodStatsBuffer = new ComputeBuffer(MOOD_STATS_MAX, sizeof(float));
         moodStatsBuffer.SetData(moodStatsDefault);
 
+        coveredPixelsBuffer = new ComputeBuffer(1, sizeof(float));
+        coveredPixelsBuffer.SetData(coveredPixelsDefault);
+
         updateFriendsKernel = updateShader.FindKernel("UpdateFriends");
         renderFriendsKernel = renderShader.FindKernel("RenderFriends");
         copyFriendsKernel = copyShader.FindKernel("CopyFriends");
         aggregateFriendsKernel = aggregateShader.FindKernel("AggregateFriends");
+        imageCoverageKernel = imageCoverageShader.FindKernel("ImageCoverage");
 
         updateShader.SetInt("screenWidth", Screen.width);
         updateShader.SetInt("screenHeight", Screen.height);
@@ -233,6 +251,11 @@ public class FriendManager : MonoBehaviour
         updateShader.SetFloat("windowVelocityY", 0.0f);
         updateShader.SetInt("friendCount", FriendCount);
         updateShader.SetBuffer(updateFriendsKernel, "friendData", friendDataBuffer);
+        updateShader.SetFloat("foodLeft", 0.0f);
+        updateShader.SetFloat("foodTop", 0.0f);
+        updateShader.SetFloat("foodRight", 0.0f);
+        updateShader.SetFloat("foodBottom", 0.0f);
+        updateShader.SetTexture(updateFriendsKernel, "foodTexture", renderTexture);
 
         renderShader.SetTexture(renderFriendsKernel, "renderTexture", renderTexture);
         renderShader.SetInt("screenWidth", Screen.width);
@@ -252,10 +275,16 @@ public class FriendManager : MonoBehaviour
         aggregateShader.SetBuffer(aggregateFriendsKernel, "friendData", friendDataBuffer);
         aggregateShader.SetBuffer(aggregateFriendsKernel, "moodStats", moodStatsBuffer);
 
+        imageCoverageShader.SetInt("foodWidth", 0);
+        imageCoverageShader.SetInt("foodHeight", 0);
+        imageCoverageShader.SetTexture(imageCoverageKernel, "foodTexture", renderTexture);
+        imageCoverageShader.SetBuffer(imageCoverageKernel, "coveredPixels", coveredPixelsBuffer);
+
         updateShader.GetKernelThreadGroupSizes(updateFriendsKernel, out updateThreadGroupSize, out _, out _);
         renderShader.GetKernelThreadGroupSizes(renderFriendsKernel, out renderThreadGroupSize, out _, out _);
         copyShader.GetKernelThreadGroupSizes(copyFriendsKernel, out copyThreadGroupSize, out _, out _);
         aggregateShader.GetKernelThreadGroupSizes(aggregateFriendsKernel, out aggregateThreadGroupSize, out _, out _);
+        imageCoverageShader.GetKernelThreadGroupSizes(imageCoverageKernel, out imageCoverageThreadGroupSize, out _, out _);
 
         SelectNewRandomFriends();
 
@@ -290,12 +319,10 @@ public class FriendManager : MonoBehaviour
         return FriendCountStep >= friendCountSteps.Length - 1 ? 0.0f : duration;
     }
 
-    public void SelectNewRandomFriends()
-    {
+    public void SelectNewRandomFriends() {
         var randomFriendHashmap = new HashSet<int>();
 
-        do
-        {
+        do {
             var randomNumber = Random.Range(0, FriendCount);
             while (!randomFriendHashmap.Add(randomNumber)) {
                 randomNumber = Random.Range(0, FriendCount);
@@ -321,8 +348,7 @@ public class FriendManager : MonoBehaviour
             FriendCount = Mathf.Min(initialFriendBurstCount, Mathf.FloorToInt(Time.time * initialFriendBurstRate));
         }
 
-        if (FriendCount <= 0)
-        {
+        if (FriendCount <= 0) {
             return;
         }
 
@@ -349,6 +375,25 @@ public class FriendManager : MonoBehaviour
         updateShader.SetFloat("windowVelocityX", windowManager.ForegroundVelocity.x);
         updateShader.SetFloat("windowVelocityY", windowManager.ForegroundVelocity.y);
         updateShader.SetInt("friendCount", FriendCount);
+        FoodItem foodItem = foodManager.GetFood();
+        if (foodItem != null) {
+            RectTransform rectTransform = foodItem.RawImage.rectTransform;
+            Vector3[] corners = new Vector3[4];
+            rectTransform.GetWorldCorners(corners);
+            //Debug.Log(corners[0].ToString() + " | " + corners[1].ToString() + " | " + corners[2].ToString() + " | " + corners[3].ToString());
+            updateShader.SetFloat("foodLeft", corners[1].x);
+            updateShader.SetFloat("foodTop", Screen.height - corners[1].y);
+            updateShader.SetFloat("foodRight", corners[3].x);
+            updateShader.SetFloat("foodBottom", Screen.height - corners[3].y);
+            updateShader.SetTexture(updateFriendsKernel, "foodTexture", foodItem.RT);
+        } else {
+            updateShader.SetFloat("foodLeft", 0.0f);
+            updateShader.SetFloat("foodTop", 0.0f);
+            updateShader.SetFloat("foodRight", 0.0f);
+            updateShader.SetFloat("foodBottom", 0.0f);
+            // it can't be null soooooo guess we'll use the main screen as a placeholder
+            updateShader.SetTexture(updateFriendsKernel, "foodTexture", renderTexture);
+        }
         updateDispatchSize = Mathf.CeilToInt((float) FriendCount / updateThreadGroupSize / FRIENDS_PER_INVOCATION);
         updateShader.Dispatch(updateFriendsKernel, updateDispatchSize, 1, 1);
 
@@ -357,6 +402,9 @@ public class FriendManager : MonoBehaviour
 
         // Aggregate loop
         AggregateStatsToCPU();
+
+        // Calculate how much of the food has been eaten
+        CalculateImageCoverageToCPU();
 
         // Render loop
         RenderTexture oldRT = RenderTexture.active;
@@ -384,5 +432,22 @@ public class FriendManager : MonoBehaviour
         aggregateDispatchSize = Mathf.CeilToInt((float) FriendCount / aggregateThreadGroupSize / FRIENDS_PER_INVOCATION);
         aggregateShader.Dispatch(aggregateFriendsKernel, aggregateDispatchSize, 1, 1);
         moodStatsBuffer.GetData(MoodStats);
+    }
+
+    private void CalculateImageCoverageToCPU() {
+        FoodItem foodItem = foodManager.GetFood();
+        if (foodItem == null) {
+            return;
+        }
+
+        long totalPixels = foodItem.RT.width * foodItem.RT.height;
+
+        coveredPixelsBuffer.SetData(coveredPixelsDefault);
+        imageCoverageShader.SetInt("foodWidth", foodItem.RT.width);
+        imageCoverageShader.SetInt("foodHeight", foodItem.RT.height);
+        imageCoverageShader.SetTexture(imageCoverageKernel, "foodTexture", foodItem.RT);
+        imageCoverageDispatchSize = (int) System.Math.Ceiling((double) totalPixels / imageCoverageThreadGroupSize / PIXELS_PER_INVOCATION);
+        imageCoverageShader.Dispatch(imageCoverageKernel, imageCoverageDispatchSize, 1, 1);
+        coveredPixelsBuffer.GetData(CoveredPixels);
     }
 }

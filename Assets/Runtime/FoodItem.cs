@@ -1,22 +1,29 @@
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.UI;
 
 public class FoodItem
 {
+    public string Name { get; private set; } = string.Empty;
     public bool Ready { get; private set; } = false;
     public Texture2D Tex2D { get; private set; } = null;
     public RenderTexture RT { get; private set; } = null;
     public GameObject PrefabInstance { get; private set; } = null;
+    public RawImage RawImage { get; private set; } = null;
 
-    public FoodItem() {}
+    public FoodItem(string name) {
+        Name = name;
+    }
 
-    public FoodItem(Texture2D texture2D) {
+    public FoodItem(string name, Texture2D texture2D) {
+        Name = name;
         LoadTexture2D(texture2D);
     }
 
     public void LoadTexture2D(Texture2D texture2D) {
         Tex2D = texture2D;
-        RT = new RenderTexture(Tex2D.width, Tex2D.height, 0, Tex2D.graphicsFormat, Tex2D.mipmapCount);
+        RT = new RenderTexture(Tex2D.width, Tex2D.height, 0, RenderTextureFormat.ARGB32, Tex2D.mipmapCount);
+        RT.enableRandomWrite = true;
         Sync2DToRT();
         Ready = true;
     }
@@ -40,9 +47,9 @@ public class FoodItem
 
     public void SetPrefabInstance(GameObject prefabInstance) {
         PrefabInstance = prefabInstance;
-        RawImage rawImage = prefabInstance.GetComponent<RawImage>();
-        rawImage.texture = RT;
-        rawImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Tex2D.width);
-        rawImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Tex2D.height);
+        RawImage = prefabInstance.GetComponent<RawImage>();
+        RawImage.texture = RT;
+        RawImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Tex2D.width);
+        RawImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Tex2D.height);
     }
 }

@@ -10,7 +10,7 @@ public class FoodManager : MonoBehaviour {
     [SerializeField]
     private TransparancyManager transparencyManager;
     [SerializeField]
-    private Canvas canvas;
+    private RectTransform foodContainer;
     [SerializeField]
     private GameObject foodPrefab;
 
@@ -31,6 +31,10 @@ public class FoodManager : MonoBehaviour {
 
         if (!Directory.Exists(foodFolder)) {
             Directory.CreateDirectory(foodFolder);
+        }
+
+        if (!File.Exists(Path.Combine(foodFolder, "Put images here.txt"))) {
+            File.WriteAllText(Path.Combine(foodFolder, "Put images here.txt"), "Feed your friends by placing image files (PNG & JPEG) in this folder.\r\nWatch as they chip away pixel by pixel!\r\n(A backup of all images is placed in ../eaten/)");
         }
 
         if (!Directory.Exists(eatenFolder)) {
@@ -54,12 +58,16 @@ public class FoodManager : MonoBehaviour {
         }
     }
 
+    public FoodItem GetFood() {
+        return Food.Count <= 0 ? null : Food.First().Value;
+    }
+
     public void OpenFoodFolder() {
         System.Diagnostics.Process.Start("explorer.exe", foodFolder);
     }
 
     private async UniTask LoadImage(string imageName) {
-        Food[imageName] = new FoodItem();
+        Food[imageName] = new FoodItem(imageName);
 
         // Make sure a backup of the file exists (no overwriting)
         if (!File.Exists(Path.Combine(eatenFolder, imageName))) {
@@ -71,7 +79,7 @@ public class FoodManager : MonoBehaviour {
         ImageConversion.LoadImage(tex2D, imageBytes);
         Food[imageName].LoadTexture2D(tex2D);
 
-        GameObject prefabInstance = Instantiate(foodPrefab, canvas.transform);
+        GameObject prefabInstance = Instantiate(foodPrefab, foodContainer);
         Food[imageName].SetPrefabInstance(prefabInstance);
     }
 }

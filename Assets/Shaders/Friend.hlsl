@@ -45,3 +45,8 @@ struct Friend {
 #define CURSOR_SEEKING_DIRECTION(this) (this.fvar0)
 #define CURSOR_SEEKING_JUMP_DISTANCE(this) (this.fvar1)
 #define CURSOR_SEEKING_CANCEL_TIMER(this) (this.fvar2)
+
+#define HUNGRY_DIRECTION(this) (this.fvar0)
+#define HUNGRY_JUMP_DISTANCE(this) (this.fvar1)
+#define HUNGRY_CANCEL_TIMER(this) (this.fvar2)
+#define HUNGRY_SPEED(this) (this.fvar3)
