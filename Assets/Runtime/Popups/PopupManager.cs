@@ -100,16 +100,13 @@ public class PopupManager : MonoBehaviour
             }
         }
 
-        await RandomDelay(new Vector2(1.5f, 4.5f));
+        await RandomDelay(new Vector2(2.5f, 3.5f));
     }
 
     private async UniTask HeartParticleLifetimeInternal(Friend friend) {
         GameObject instance = Instantiate(heartParticlePrefab, popupParent);
         HeartParticle heartParticle = instance.GetComponent<HeartParticle>();
-        var friendPosition = friend.position;
-        friendPosition.y = Screen.height - friendPosition.y;
-        heartParticle.transform.position = friendPosition + new Vector2(0.0f, 32.0f);
-        await heartParticle.FadeAnimation();
+        await heartParticle.FadeAnimation(friend);
     }
 
     // TODO: this should maybe be an extension method

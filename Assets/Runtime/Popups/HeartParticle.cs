@@ -18,10 +18,18 @@ public class HeartParticle : MonoBehaviour
         timeOffset = Random.Range(0.0f, 10.0f);
     }
 
-    public async UniTask FadeAnimation() {
+    public async UniTask FadeAnimation(FriendManager.Friend friend) {
+        byte colorIdx = friend.colorIdx;
         canvasGroup = GetComponent<CanvasGroup>();
         canvasGroup.alpha = 0.0f;
-        await UniTask.Delay(TimeSpan.FromSeconds(Random.Range(0.0f, 0.25f)));
+        await UniTask.Delay(TimeSpan.FromSeconds(Random.Range(0.0f, 2.0f)));
+        if (friend.colorIdx != colorIdx) { // new random friends were selected during wait
+            Destroy(gameObject);
+            return;
+        }
+        var friendPosition = friend.position;
+        friendPosition.y = Screen.height - friendPosition.y;
+        transform.position = friendPosition + new Vector2(0.0f, 32.0f);
         LMotion.Create(0f, 1.0f, 2.0f)
             .WithEase(Ease.OutQuad)
             .Bind(it => image.transform.localPosition = new Vector3(0.0f, it * 64.0f, 0.0f))
