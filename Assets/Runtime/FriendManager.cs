@@ -11,13 +11,12 @@ using Random = UnityEngine.Random;
 public class FriendManager : MonoBehaviour {
     public Friend[] RandomFriends = new Friend[RANDOM_FRIEND_MAX];
     public int FriendCount { get; private set; } = 0;
+    public bool Tiny = false;
 
     [SerializeField]
     private int initialFriendBurstCount = 0;
     [SerializeField]
     private float initialFriendBurstRate = 0;
-    [SerializeField]
-    private bool tiny = true;
 
     [SerializeField]
     private ComputeShader updateShader = null;
@@ -261,7 +260,7 @@ public class FriendManager : MonoBehaviour {
         renderShader.SetInt("screenWidth", Screen.width);
         renderShader.SetInt("screenHeight", Screen.height);
         renderShader.SetInt("frameCount", 0);
-        renderShader.SetBool("tiny", tiny);
+        renderShader.SetBool("tiny", Tiny);
         renderShader.SetBool("debugDrawMood", debugDrawMood);
         renderShader.SetInt("friendCount", FriendCount);
         renderShader.SetBuffer(renderFriendsKernel, "friendData", friendDataBuffer);
@@ -412,7 +411,7 @@ public class FriendManager : MonoBehaviour {
         GL.Clear(true, true, Color.clear);
         RenderTexture.active = oldRT;
         renderShader.SetInt("frameCount", Time.frameCount);
-        renderShader.SetBool("tiny", tiny);
+        renderShader.SetBool("tiny", Tiny);
         renderShader.SetBool("debugDrawMood", debugDrawMood);
         renderShader.SetInt("friendCount", FriendCount);
         renderDispatchSize = Mathf.CeilToInt((float) FriendCount / renderThreadGroupSize / FRIENDS_PER_INVOCATION);
