@@ -165,8 +165,9 @@ public class FriendManager : MonoBehaviour
                     float cannonEdge = side ? Screen.width : 0.0f;
                     position.x = cannonEdge + Random.Range(-20.0f, 20.0f);
                     position.y = Screen.height + Random.Range(-40.0f, -20.0f);
-                    velocity.x = (side ? -1.0f : 1.0f) * Random.Range(400.0f, 600.0f);
-                    velocity.y = Random.Range(-1200.0f, -1000.0f);
+                    float scalar = Screen.width * 0.75f;
+                    velocity.x = scalar * (side ? -1.0f : 1.0f) * Random.Range(0.4f, 0.5f);
+                    velocity.y = scalar * Random.Range(-1.0f, -0.8f);
                 }
             }
 
