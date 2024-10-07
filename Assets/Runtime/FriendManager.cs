@@ -440,14 +440,18 @@ public class FriendManager : MonoBehaviour {
             return;
         }
 
-        long totalPixels = foodItem.RT.width * foodItem.RT.height;
+        int totalPixels = foodItem.RT.width * foodItem.RT.height;
 
         coveredPixelsBuffer.SetData(coveredPixelsDefault);
         imageCoverageShader.SetInt("foodWidth", foodItem.RT.width);
         imageCoverageShader.SetInt("foodHeight", foodItem.RT.height);
         imageCoverageShader.SetTexture(imageCoverageKernel, "foodTexture", foodItem.RT);
-        imageCoverageDispatchSize = (int) System.Math.Ceiling((double) totalPixels / imageCoverageThreadGroupSize / PIXELS_PER_INVOCATION);
+        imageCoverageDispatchSize = Mathf.CeilToInt((float) totalPixels / imageCoverageThreadGroupSize / PIXELS_PER_INVOCATION);
         imageCoverageShader.Dispatch(imageCoverageKernel, imageCoverageDispatchSize, 1, 1);
         coveredPixelsBuffer.GetData(CoveredPixels);
+
+        if (CoveredPixels[0] == 0) {
+            foodManager.OnAte(foodItem).Forget();
+        }
     }
 }

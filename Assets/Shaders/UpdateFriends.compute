@@ -33,21 +33,21 @@ RWTexture2D<float4> foodTexture;
 
 #define WINDOW_RIDING_SNAP_DISTANCE 50.0
 
-bool ShouldJumpForRect(inout Friend this, float direction, float jumpRange, float rectLeft, float rectTop, float rectRight, float rectBottom, float minimumScalar)
+bool ShouldJumpForRect(inout Friend this, float direction, float jumpRange, float rectLeft, float rectTop, float rectRight, float rectBottom, float minimumScalar, bool farSide = false)
 {
     // Moving left
     if (direction < 0.0)
     {
         return this.position.y >= screenHeight - 1.0
           && rectRight > this.position.x - jumpRange
-          && rectRight < this.position.x - jumpRange * minimumScalar;
+          && (farSide ? rectLeft : rectRight) < this.position.x - jumpRange * minimumScalar;
     }
     // Moving right
     else
     {
         return this.position.y >= screenHeight - 1.0
           && rectLeft < this.position.x + jumpRange
-          && rectLeft > this.position.x + jumpRange * minimumScalar;
+          && (farSide ? rectRight : rectLeft) > this.position.x + jumpRange * minimumScalar;
     }
 }
 
@@ -171,7 +171,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     
                     float mood = FRIEND_GET_MOOD(this) / 255.0;
                     float val = RandomValue(rngState);
-                    if (activeFood && val >= mood)
+                    if (activeFood && val * val >= mood)
                     {
                         SwitchStateHungry(this, rngState);
                     }
@@ -309,9 +309,9 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     // Stupidly attempt to jump if near on X axis
                     else
                     {
-                        if (ShouldJumpForRect(this, -1.0, HUNGRY_JUMP_DISTANCE(this), foodLeft, foodTop, foodRight, foodBottom, -0.25))
+                        if (ShouldJumpForRect(this, -1.0, HUNGRY_JUMP_DISTANCE(this), foodLeft, foodTop, foodRight, foodBottom, -0.25, true))
                         {
-                            this.velocity.y = -400.0 + -800.0 * RandomValue(rngState);
+                            this.velocity.y = -800.0 + -1000.0 * RandomValue(rngState);
                             HUNGRY_JUMP_DISTANCE(this) = 25.0 + RandomValue(rngState) * 250.0;
                         }
                     }
@@ -327,9 +327,9 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     // Stupidly attempt to jump if near on X axis
                     else
                     {
-                        if (ShouldJumpForRect(this, 1.0, HUNGRY_JUMP_DISTANCE(this), foodLeft, foodTop, foodRight, foodBottom, -0.25))
+                        if (ShouldJumpForRect(this, 1.0, HUNGRY_JUMP_DISTANCE(this), foodLeft, foodTop, foodRight, foodBottom, -0.25, true))
                         {
-                            this.velocity.y = -400.0 + -800.0 * RandomValue(rngState);
+                            this.velocity.y = -800.0 + -1000.0 * RandomValue(rngState);
                             HUNGRY_JUMP_DISTANCE(this) = 25.0 + RandomValue(rngState) * 250.0;
                         }
                     }
@@ -338,7 +338,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                 this.velocity.x = HUNGRY_SPEED(this) * HUNGRY_DIRECTION(this);
             
                 HUNGRY_CANCEL_TIMER(this) -= deltaTime;
-                if (HUNGRY_CANCEL_TIMER(this) <= 0.0)
+                if (!activeFood || HUNGRY_CANCEL_TIMER(this) <= 0.0)
                 {
                     SwitchStateWandering(this, rngState);
                 }
@@ -395,7 +395,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
     
         // Counts changes to mood once per second
         // Min & max are a sweeping range that covers 0-MOOD_SWEEP_MAX every second
-        uint moodIdx = idx % MOOD_SWEEP_MAX;
+        int moodIdx = (int) (idx % MOOD_SWEEP_MAX);
         if ((updateMoodMin <= updateMoodMax && (moodIdx >= updateMoodMin && moodIdx < updateMoodMax))
             || (updateMoodMin > updateMoodMax && (moodIdx >= updateMoodMin || moodIdx < updateMoodMax)))
         {
@@ -412,7 +412,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     moodChange = -0.02;
                     break;
                 case FRIEND_STATE_WINDOW_RIDING:
-                    moodChange = 0.09;
+                    moodChange = 0.11;
                     break;
                 case FRIEND_STATE_HUNGRY:
                     moodChange = -0.02;
@@ -424,7 +424,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
         
             if (floatDist(this.position.x, mouseX) <= 100.0 && floatDist(this.position.y, mouseY) <= 100.0)
             {
-                moodChange += 0.07;
+                moodChange += 0.09;
             }
         
             mood = clamp(mood + RandomValue(rngState) * moodChange, 0.0, 1.0);
@@ -479,7 +479,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
             if (ate)
             {
                 float mood = FRIEND_GET_MOOD(this) / 255.0;
-                mood = clamp(mood + RandomValue(rngState) * 0.3 + 0.3, 0.0, 1.0);
+                mood = clamp(mood + RandomValue(rngState) * 0.2 + 0.2, 0.0, 1.0);
                 FRIEND_SET_MOOD(this, (uint) floor(mood * 255.0));
                 SwitchStateWandering(this, rngState);
             }

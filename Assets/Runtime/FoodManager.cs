@@ -59,7 +59,20 @@ public class FoodManager : MonoBehaviour {
     }
 
     public FoodItem GetFood() {
-        return Food.Count <= 0 ? null : Food.First().Value;
+        if (Food.Count <= 0) {
+            return null;
+        }
+
+        FoodItem foodItem = Food.First().Value;
+
+        return foodItem.Ready ? foodItem : null;
+    }
+
+    public async UniTask OnAte(FoodItem foodItem) {
+        foodItem.OnAte();
+        File.Delete(Path.Combine(foodFolder, foodItem.Name));
+        await UniTask.NextFrame();
+        Food.Remove(foodItem.Name);
     }
 
     public void OpenFoodFolder() {

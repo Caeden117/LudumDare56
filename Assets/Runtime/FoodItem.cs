@@ -20,6 +20,10 @@ public class FoodItem
         LoadTexture2D(texture2D);
     }
 
+    public void OnAte() {
+        Ready = false;
+    }
+
     public void LoadTexture2D(Texture2D texture2D) {
         Tex2D = texture2D;
         RT = new RenderTexture(Tex2D.width, Tex2D.height, 0, RenderTextureFormat.ARGB32, Tex2D.mipmapCount);
