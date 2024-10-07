@@ -27,6 +27,24 @@ RWStructuredBuffer<Friend> friendData;
 
 #define WINDOW_RIDING_SNAP_DISTANCE 50.0
 
+bool ShouldJumpForRect(inout Friend this, float direction, float jumpRange, float rectLeft, float rectTop, float rectRight, float rectBottom)
+{
+    // Moving left
+    if (direction < 0.0)
+    {
+        return this.position.y >= screenHeight - 1.0
+          && rectRight > this.position.x - jumpRange
+          && rectRight < this.position.x - jumpRange * 0.25;
+    }
+    // Moving right
+    else
+    {
+        return this.position.y >= screenHeight - 1.0
+          && rectLeft < this.position.x + jumpRange
+          && rectLeft > this.position.x + jumpRange * 0.25;
+    }
+}
+
 void SwitchStateWandering(inout Friend this, inout uint rngState)
 {
     FRIEND_SET_STATE(this, FRIEND_STATE_WANDERING);
@@ -39,7 +57,6 @@ void SwitchStateWindowSeeking(inout Friend this, inout uint rngState)
     WINDOW_SEEKING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
     WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
     WINDOW_SEEKING_CANCEL_TIMER(this) = 15.0 + RandomValue(rngState) * 15.0;
-
 }
 
 void SwitchStateWindowRiding(inout Friend this, inout uint rngState)
@@ -75,6 +92,14 @@ void SwitchStateWindowRiding(inout Friend this, inout uint rngState)
     this.position.y = windowTop + WINDOW_RIDING_POS_Y(this);
     this.velocity.x = 0.0;
     this.velocity.y = 0.0;
+}
+
+void SwitchStateCursorSeeking(inout Friend this, inout uint rngState)
+{
+    FRIEND_SET_STATE(this, FRIEND_STATE_CURSOR_SEEKING);
+    CURSOR_SEEKING_DIRECTION(this) = RandomValue(rngState) >= 0.5 ? 1.0 : -1.0;
+    CURSOR_SEEKING_JUMP_DISTANCE(this) = 75.0 + RandomValue(rngState) * 150.0;
+    CURSOR_SEEKING_CANCEL_TIMER(this) = 5.0 + RandomValue(rngState) * 10.0;
 }
 
 [numthreads(64, 1, 1)]
@@ -128,7 +153,15 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                 
                     if (RandomValue(rngState) < 0.1)
                     {
-                        SwitchStateWindowSeeking(this, rngState);
+                        float mood = FRIEND_GET_MOOD(this) / 255.0;
+                        if (mood < 0.01 || (mood < 0.1 && RandomValue(rngState) < 0.25))
+                        {
+                            SwitchStateCursorSeeking(this, rngState);
+                        }
+                        else
+                        {
+                            SwitchStateWindowSeeking(this, rngState);
+                        }
                     }
                 }
                 break;
@@ -144,10 +177,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     // Stupidly attempt to jump if near on X axis
                     else
                     {
-                        if (activeWindow
-                          && this.position.y >= screenHeight - 1.0
-                          && windowRight > this.position.x - WINDOW_SEEKING_JUMP_DISTANCE(this)
-                          && windowRight < this.position.x - WINDOW_SEEKING_JUMP_DISTANCE(this) * 0.25)
+                        if (activeWindow && ShouldJumpForRect(this, -1.0, WINDOW_SEEKING_JUMP_DISTANCE(this), windowLeft, windowTop, windowRight, windowBottom))
                         {
                             this.velocity.y = -1200.0 + -600.0 * RandomValue(rngState);
                             WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
@@ -165,10 +195,7 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                     // Stupidly attempt to jump if near on X axis
                     else
                     {
-                        if (activeWindow
-                          && this.position.y >= screenHeight - 1.0
-                          && windowLeft < this.position.x + WINDOW_SEEKING_JUMP_DISTANCE(this)
-                          && windowLeft > this.position.x + WINDOW_SEEKING_JUMP_DISTANCE(this) * 0.25)
+                        if (activeWindow && ShouldJumpForRect(this, 1.0, WINDOW_SEEKING_JUMP_DISTANCE(this), windowLeft, windowTop, windowRight, windowBottom))
                         {
                             this.velocity.y = -1200.0 + -600.0 * RandomValue(rngState);
                             WINDOW_SEEKING_JUMP_DISTANCE(this) = 150.0 + RandomValue(rngState) * 300.0;
@@ -246,6 +273,53 @@ void UpdateFriends(uint3 id: SV_DispatchThreadID)
                         SwitchStateWandering(this, rngState);
                     }
                 }
+                break;
+            case FRIEND_STATE_CURSOR_SEEKING:
+                // Moving left
+                if (CURSOR_SEEKING_DIRECTION(this) < 0.0)
+                {
+                    // Too far left, reverse direction
+                    if (this.position.y >= screenHeight - 1.0 && (this.position.x <= 0.0 || this.position.x <= mouseX - 500.0))
+                    {
+                        CURSOR_SEEKING_DIRECTION(this) = 1.0;
+                    }
+                    // Stupidly attempt to jump if near on X axis
+                    else
+                    {
+                        if (ShouldJumpForRect(this, -1.0, CURSOR_SEEKING_JUMP_DISTANCE(this), mouseX, mouseY, mouseX, mouseY))
+                        {
+                            this.velocity.y = -1200.0 + -1200.0 * RandomValue(rngState);
+                            CURSOR_SEEKING_JUMP_DISTANCE(this) = 75.0 + RandomValue(rngState) * 150.0;
+                        }
+                    }
+                }
+                // Moving right
+                else if (CURSOR_SEEKING_DIRECTION(this) > 0.0)
+                {
+                    // Too far right, reverse direction
+                    if (this.position.y >= screenHeight - 1.0 && (this.position.x >= screenWidth - 1.0 || this.position.x >= mouseX + 500.0))
+                    {
+                        CURSOR_SEEKING_DIRECTION(this) = -1.0;
+                    }
+                    // Stupidly attempt to jump if near on X axis
+                    else
+                    {
+                        if (ShouldJumpForRect(this, 1.0, CURSOR_SEEKING_JUMP_DISTANCE(this), mouseX, mouseY, mouseX, mouseY))
+                        {
+                            this.velocity.y = -1200.0 + -1200.0 * RandomValue(rngState);
+                            CURSOR_SEEKING_JUMP_DISTANCE(this) = 75.0 + RandomValue(rngState) * 150.0;
+                        }
+                    }
+                }
+            
+                this.velocity.x = 150.0 * CURSOR_SEEKING_DIRECTION(this);
+            
+                CURSOR_SEEKING_CANCEL_TIMER(this) -= deltaTime;
+                if (CURSOR_SEEKING_CANCEL_TIMER(this) <= 0.0)
+                {
+                    SwitchStateWandering(this, rngState);
+                }
+            
                 break;
         }
     

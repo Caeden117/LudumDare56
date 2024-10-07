@@ -29,6 +29,7 @@ struct Friend {
 #define FRIEND_STATE_WINDOW_SEEKING 2
 #define FRIEND_STATE_WINDOW_RIDING 3
 #define FRIEND_STATE_HUNGRY 4
+#define FRIEND_STATE_CURSOR_SEEKING 5
 
 #define WANDERING_JUMP_TIMER(this) (this.fvar0)
 
@@ -40,3 +41,7 @@ struct Friend {
 #define WINDOW_RIDING_POS_Y(this) (this.fvar1)
 #define WINDOW_RIDING_DIRECTION(this) (this.fvar2)
 #define WINDOW_RIDING_JUMP_TIMER(this) (this.fvar3)
+
+#define CURSOR_SEEKING_DIRECTION(this) (this.fvar0)
+#define CURSOR_SEEKING_JUMP_DISTANCE(this) (this.fvar1)
+#define CURSOR_SEEKING_CANCEL_TIMER(this) (this.fvar2)
