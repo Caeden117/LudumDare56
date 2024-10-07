@@ -77,15 +77,7 @@ public class FoodManager : MonoBehaviour {
     }
 
     public void OpenFoodFolder() {
-        try {
-            System.Diagnostics.Process.Start("explorer.exe", foodFolder);
-        } catch (Win32Exception e) {
-            // "Win32Exception: Succes"
-            // i will kill you with a rock
-            if (e.ErrorCode != 0) {
-                throw;
-            }
-        }
+        Application.OpenURL(foodFolder);
     }
 
     private async UniTask LoadImage(string imageName) {
