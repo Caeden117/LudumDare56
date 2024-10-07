@@ -3656,6 +3656,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de663fe6baafb4f4eabcfbc7af49ae54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  transparencyManager: {fileID: 1979284823}
   canvas: {fileID: 677696290}
   foodPrefab: {fileID: 4862121414606139433, guid: b85d9dcb383af704e9e8a98284a634ba, type: 3}
 --- !u!4 &1113368323

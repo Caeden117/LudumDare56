@@ -42,5 +42,7 @@ public class FoodItem
         PrefabInstance = prefabInstance;
         RawImage rawImage = prefabInstance.GetComponent<RawImage>();
         rawImage.texture = RT;
+        rawImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Tex2D.width);
+        rawImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Tex2D.height);
     }
 }

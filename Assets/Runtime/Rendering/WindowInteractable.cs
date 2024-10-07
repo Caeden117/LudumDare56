@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 public class WindowInteractable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] private TransparancyManager transparancyManager;
+    [SerializeField] public TransparancyManager transparancyManager;
 
     public void OnPointerEnter(PointerEventData eventData)
         => transparancyManager.SetInteractable(true);

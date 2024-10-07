@@ -8,6 +8,8 @@ using UnityEngine;
 
 public class FoodManager : MonoBehaviour {
     [SerializeField]
+    private TransparancyManager transparencyManager;
+    [SerializeField]
     private Canvas canvas;
     [SerializeField]
     private GameObject foodPrefab;
@@ -19,6 +21,8 @@ public class FoodManager : MonoBehaviour {
     public Dictionary<string, FoodItem> Food { get; private set; } = new Dictionary<string, FoodItem>();
 
     private async UniTask Start() {
+        foodPrefab.GetComponent<WindowInteractable>().transparancyManager = transparencyManager;
+
         // Path.GetFullPath to normalize path separators on Windows
         foodFolder = Path.GetFullPath(Path.Combine(Application.persistentDataPath, "food"));
         eatenFolder = Path.GetFullPath(Path.Combine(Application.persistentDataPath, "eaten"));
@@ -67,6 +71,7 @@ public class FoodManager : MonoBehaviour {
         ImageConversion.LoadImage(tex2D, imageBytes);
         Food[imageName].LoadTexture2D(tex2D);
 
-        Food[imageName].SetPrefabInstance(Instantiate(foodPrefab, canvas.transform));
+        GameObject prefabInstance = Instantiate(foodPrefab, canvas.transform);
+        Food[imageName].SetPrefabInstance(prefabInstance);
     }
 }
